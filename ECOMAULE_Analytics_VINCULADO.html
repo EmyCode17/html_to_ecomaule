@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECOMAULE | Panel de Control de Gestión</title>
+<style>
+:root{--nav:#101c32;--nav2:#182945;--bg:#f3f6fa;--surface:#fff;--ink:#16263e;--muted:#708096;--border:#dce4ed;--blue:#176bb5;--cyan:#12a3ba;--green:#079566;--red:#d64b54;--amber:#b77913;--violet:#7b59bb;--shadow:0 2px 11px #152c4810}
+*{box-sizing:border-box}html,body{margin:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}header{background:var(--nav);color:white;box-shadow:0 2px 8px #0002;position:sticky;top:0;z-index:20}.header-inner{max-width:1600px;margin:auto;min-height:69px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 24px}.brand{display:flex;align-items:center;gap:13px;min-width:230px}.logo{background:linear-gradient(140deg,#35b6a6,#197abf);width:41px;height:41px;border-radius:11px;display:grid;place-items:center;color:white;font-weight:800;font-size:23px}.brand small{display:block;color:#abc2da;font-size:10px;font-weight:800;letter-spacing:1.2px}.brand strong{font-size:17px;letter-spacing:.05px}.toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.toolbar label{font-size:10px;letter-spacing:.5px;color:#b9c7dc;font-weight:800}.header-select{border:1px solid #354761;border-radius:8px;background:#22334f;color:#fff;padding:9px 26px 9px 9px;font-size:12px;font-weight:700;max-width:170px}.button{border:1px solid var(--border);background:white;color:#244466;padding:9px 13px;border-radius:8px;font-weight:750;font-size:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s}.button:hover{border-color:#80b7dd;background:#f5faff}.button.primary{background:#146ab4;border-color:#146ab4;color:white}.button.primary:hover{background:#0d5899}.button.dark{background:#233651;border-color:#445675;color:white}.button.success{background:#e3f7ef;border-color:#a9dfcc;color:#087650}.button.danger{color:#ad3140}.button.small{padding:6px 10px}.button.ghost{background:transparent}.toolbar .button{white-space:nowrap}.content{max-width:1600px;margin:0 auto;padding:21px 24px 60px}.intro{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.2fr;gap:12px;margin-bottom:15px}.intro article{background:white;border:1px solid var(--border);border-radius:9px;padding:14px 16px;min-height:77px;box-shadow:var(--shadow)}.eyebrow{display:block;font-size:10px;letter-spacing:.75px;font-weight:850;color:#7b90a9;margin-bottom:6px}.intro strong{font-size:14px}.intro small{display:block;color:var(--muted);margin-top:4px;font-size:11px}.intro strong.accent{color:#076d9e}.demo-banner{background:#fff8e8;color:#805614;border:1px solid #f1d7a5;border-radius:9px;padding:11px 14px;font-size:12px;display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:16px}.demo-banner strong{color:#915b08}.tabs{display:flex;overflow-x:auto;gap:6px;border-bottom:1px solid var(--border);margin-bottom:15px;padding-bottom:1px}.tab{border:1px solid var(--border);border-bottom:3px solid transparent;border-radius:8px 8px 0 0;background:#eaf0f6;color:#566982;font-size:12px;white-space:nowrap;padding:11px 15px;font-weight:750}.tab.active{background:white;border-bottom-color:var(--blue);color:#075b9d}.tab .num{border-radius:5px;padding:2px 6px;background:#d6e6f4;margin-right:6px;font-size:10px}.section{display:none}.section.active{display:block}.panel{background:white;border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);padding:17px;margin-bottom:14px}.panel-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}.panel-heading h2{font-size:16px;margin:0 0 5px;font-weight:800}.panel-heading p{font-size:12px;color:var(--muted);margin:0}.pills{display:flex;gap:6px;flex-wrap:wrap}.pill{font-size:10px;color:#147e5d;background:#eaf8f2;border:1px solid #bfebd8;border-radius:5px;padding:5px 8px;font-weight:750}.pill.purple{background:#f1edfe;border-color:#d5c7f8;color:#7553ba}.pill.neutral{background:#edf3f8;border-color:#dce5ef;color:#577188}.strip{background:#f5f8fb;border:1px solid #e2eaf2;border-radius:8px;padding:12px 14px;font-size:12px;margin-bottom:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}.strip span{color:var(--muted)}.kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:18px}.kpi{border:1px solid #dfe7f0;border-radius:9px;padding:12px;background:#fbfcfe;min-height:108px;min-width:0}.kpi .kpi-name{color:#73869f;font-size:10px;font-weight:850;letter-spacing:.3px;display:block;min-height:25px}.kpi .value{font-size:24px;font-weight:850;letter-spacing:-.8px;white-space:nowrap}.kpi .unit{font-size:11px;font-weight:700;color:#7690a9;margin-left:4px}.kpi .foot{margin-top:9px;display:flex;gap:7px;align-items:center;justify-content:space-between;color:#7c8a9c;font-size:11px}.kpi .delta{padding:3px 5px;border-radius:4px;font-size:10px;font-weight:850;white-space:nowrap}.delta.good{background:#e3f6ed;color:#087c53}.delta.bad{background:#fee8e8;color:#bd3c47}.delta.flat{background:#edf1f6;color:#68788a}.section-label{margin:18px 0 12px;display:flex;gap:9px;align-items:center;font-size:12px;color:#49647e;font-weight:850}.section-label:after{content:'';height:1px;background:#e2e8ef;flex:1}.charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.chart-card{border:1px solid #e0e7f0;background:#fcfdff;border-radius:10px;padding:13px;min-width:0}.chart-card h3{font-size:12px;margin:0 0 5px}.chart-card p{color:#8594a8;font-size:10px;margin:0}.chart{height:230px;margin-top:8px}.chart svg{width:100%;height:100%;overflow:visible}.legend{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;color:#73859c;font-size:10px;margin-top:4px}.dot{display:inline-block;width:8px;height:8px;border-radius:100%;margin-right:5px}.columns{display:grid;grid-template-columns:1.5fr 1fr;gap:13px}.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stat{background:#f6f9fc;border:1px solid #e3eaf2;border-radius:8px;padding:15px}.stat label{display:block;font-size:11px;color:#73849b;font-weight:750;margin-bottom:8px}.stat b{font-size:23px}.stat small{display:block;color:#8391a4;margin-top:5px;font-size:11px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#697d96;background:#f4f7fb}th,td{padding:11px 12px;border-bottom:1px solid #e7edf4}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}tr:hover td{background:#fafcff}tfoot td{font-weight:850;background:#f3f8fe}td.negative{color:#cb4050;font-weight:750}td.positive{color:#079063;font-weight:750}.info{background:#eef5fc;color:#38607f;padding:12px 15px;border-radius:8px;font-size:12px;border:1px solid #d9e8f6;line-height:1.6}.empty{text-align:center;padding:45px 15px;color:#8492a5}.upload{display:flex;flex-wrap:wrap;gap:15px}.upload-card{border:2px dashed #bfd2e5;border-radius:11px;background:#f8fbff;padding:28px;flex:1;min-width:280px;text-align:center}.upload-card strong{display:block;margin-bottom:9px;font-size:15px}.upload-card p{color:#8191a4;font-size:12px;line-height:1.6}.upload-card input{display:block;margin:16px auto;font-size:12px;max-width:100%}.flex{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.field label{display:block;color:#6e8199;font-size:11px;font-weight:750;margin-bottom:6px}.field input,.field select{width:100%;padding:10px 9px;border:1px solid #cfdae6;border-radius:8px;background:white;font-size:12px;color:#233d57}.field input:focus,.field select:focus{outline:2px solid #b6d7ef}.hint{font-size:11px;color:#73849b;line-height:1.7}.footer{margin-top:20px;color:#8594aa;font-size:11px;text-align:center}.status{display:flex;align-items:center;gap:7px;color:#b9cadf;font-size:11px}.status i{width:7px;height:7px;border-radius:100%;background:#e9ae3d}.right{margin-left:auto}.custom-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.tiny{font-size:10px;color:#8391a0}.hidden{display:none!important}dialog{border:1px solid var(--border);padding:0;border-radius:13px;width:min(630px,94vw);box-shadow:0 15px 65px #06193348}dialog::backdrop{background:#06182c8a}.modal-head{background:#f5f8fc;padding:16px 20px;font-weight:800;border-bottom:1px solid var(--border)}.modal-body{padding:20px}.modal-foot{padding:15px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:9px}.pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#14243c;color:#ddf0fa;padding:12px;border-radius:8px;font-size:11px}.badge-source{display:inline-block;font-size:9px;border-radius:5px;padding:3px 6px;background:#fdf1d4;color:#8a6313;font-weight:750}
+@media(max-width:1200px){.intro{grid-template-columns:repeat(2,1fr)}.kpi-grid{grid-template-columns:repeat(3,1fr)}.charts{grid-template-columns:1fr 1fr}.header-inner{align-items:flex-start;flex-wrap:wrap}.toolbar{flex:1}}@media(max-width:750px){.content{padding:12px}.header-inner{padding:12px}.intro{grid-template-columns:1fr 1fr}.kpi-grid,.stat-grid{grid-template-columns:repeat(2,1fr)}.charts,.columns,.custom-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr 1fr}.kpi .value{font-size:20px}}@media(max-width:440px){.intro,.kpi-grid,.stat-grid,.form-grid{grid-template-columns:1fr}.brand{min-width:0}}
+
+/* Módulo 2 · Control de costos · versión 0.2 */
+.cost-filter-row{display:flex;align-items:end;flex-wrap:wrap;gap:14px;background:#f6f9fc;border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:14px}
+.cost-filter-row .field{flex:1;min-width:180px}.cost-filter-row .field label{display:block;margin-bottom:5px;font-weight:750;color:#60758f;font-size:11px}
+.cost-filter-row select{width:100%;max-width:none;background:white;border:1px solid #d2deea;border-radius:7px;padding:10px;color:#213957;font-weight:650;font-size:12px}
+.cost-filter-button{flex:0 0 auto!important;min-width:auto!important}.cost-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.cost-summary{padding:15px 14px;background:#f7fafe;border:1px solid #e0e8f0;border-radius:9px;min-height:110px}.cost-summary .name{font-size:10px;text-transform:uppercase;letter-spacing:.45px;font-weight:800;color:#627892}
+.cost-summary .number{font-weight:850;font-size:23px;margin:7px 0 5px;color:#16263e}.cost-summary .detail{font-size:11px;color:#72839a}.cost-summary .status{display:inline-block;padding:2px 6px;font-size:10px;border-radius:4px;margin-top:5px;font-weight:700}
+.cost-summary .status.negative{background:#fee9eb;color:#ba3647}.cost-summary .status.positive{background:#e5f8ef;color:#087e57}
+.costs-table tbody tr:first-child{background:#edf5fd}.costs-table tbody tr td:first-child{font-weight:750}.costs-table tbody tr td:nth-child(6){white-space:nowrap}
+.cost-narrative{font-size:12px;line-height:1.65;color:#415b79}.cost-narrative p{padding:11px 12px;background:#f6f9fc;border:1px solid #e2eaf2;border-radius:8px;margin:0 0 8px}
+.cost-status{border-radius:4px;font-weight:750;padding:4px 7px;font-size:10px;background:#edf1f6;color:#53667d}.cost-status.over{background:#fee9eb;color:#bc3c4c}.cost-status.save{background:#e5f8ef;color:#087e57}.cost-status.missing{background:#f1f4f7;color:#65768a}
+@media(max-width:1050px){.cost-summary-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.cost-summary-grid{grid-template-columns:1fr}.cost-filter-row .field{min-width:100%}}
+</style>
+</head>
+<body>
+<header><div class="header-inner"><div class="brand"><div class="logo">E</div><div><small>CONTROL DE GESTIÓN · OPERACIONES</small><strong>ECOMAULE <span style="color:#95c9e7">| Analytics</span></strong></div></div><div class="toolbar"><label>UNIDAD (UP)</label><select id="up" class="header-select"><option value="ALL">CONSOLIDADO</option><option>LODOS</option><option>COMPOST</option><option>RELLENO</option><option>BIOGAS</option><option>VAL ENV</option><option>RCD</option></select><label>PERÍODO</label><input id="period" type="month" class="header-select" value="2026-10" min="2022-01" max="2035-12"><span class="status" title="Prototipo local, sin conexión a servidor"><i></i> Local · sin SAP</span><button class="button dark" id="syncExcelBtn" type="button">↻ Actualizar Excel</button><button class="button dark" id="jumpUpload">↥ Cargar datos</button><button class="button dark" id="exportBtn">↓ Exportar CSV</button></div></div></header>
+<main class="content"><div class="intro"><article><span class="eyebrow">PLANTA</span><strong>ECOMAULE</strong><small>Control de gestión operacional</small></article><article><span class="eyebrow">UNIDAD SELECCIONADA</span><strong class="accent" id="upCaption">CONSOLIDADO</strong><small id="upHint">Todas las UP</small></article><article><span class="eyebrow">PERÍODO DE ANÁLISIS</span><strong id="periodCaption">Octubre 2026</strong><small>Comparación Real · PPTO</small></article><article><span class="eyebrow">FUENTES DE INFORMACIÓN</span><strong id="sources">Excel / SAP exportado</strong><small id="updated">Sin conexión directa a SAP</small></article></div>
+<div class="demo-banner" id="demoBanner"><div>⚠️ <strong>MODO DEMOSTRACIÓN.</strong> Todos los importes y volúmenes iniciales son FICTICIOS. Carga tus datos para reemplazarlos. No usar cifras de este prototipo para informes.</div><button class="button small" id="clearDemo">Quitar ejemplo</button></div>
+<div class="strip" style="border-color:#b2d9c8;background:#effaf4;margin-bottom:12px"><div>🟢 <b>Excel local vinculado:</b> <span id="syncExcelInfo">Comprobando archivo maestro...</span></div><span>PRUEBA LOCAL · datos de ejemplo, no oficiales</span></div>
+<nav class="tabs" id="tabs"><button class="tab active" data-tab="resumen"><span class="num">1</span>Resumen ejecutivo</button><button class="tab" data-tab="costos"><span class="num">2</span>Control de costos</button><button class="tab" data-tab="operacion"><span class="num">3</span>Operación y eficiencia</button><button class="tab" data-tab="biodigestion"><span class="num">4</span>Biodigestión</button><button class="tab" data-tab="acopios"><span class="num">5</span>Acopios / SMA</button><button class="tab" data-tab="indicadores"><span class="num">6</span>Catálogo de KPI</button><button class="tab" data-tab="datos"><span class="num">7</span>Carga de datos</button></nav>
+<section id="resumen" class="section active"><div class="panel"><div class="panel-heading"><div><h2>Resultados · <span data-up-name>CONSOLIDADO</span> · <span data-period-name>Octubre 2026</span></h2><p>Seguimiento mensual y acumulado frente a las bases de comparación presupuestarias.</p></div><div class="pills"><span class="pill">Control de Gestión</span><span class="pill purple">Real / PPTO</span></div></div><div class="strip"><div><b>Vista:</b> cierre mensual y evolución del año</div><span id="recordCount">—</span></div><div class="kpi-grid" id="monthlyKpis"></div><div class="section-label">RESULTADOS ACUMULADOS DEL AÑO · YTD</div><div class="kpi-grid" id="ytdKpis"></div><div class="section-label">EVOLUCIÓN MENSUAL</div><div class="charts"><div class="chart-card"><h3>Ingresos · Real vs. PPTO</h3><p>MM CLP · enero a diciembre</p><div class="chart" id="chartIngresos"></div><div class="legend"><span><i class="dot" style="background:#146fb5"></i>Real</span><span><i class="dot" style="background:#9aaabd"></i>Presupuesto</span></div></div><div class="chart-card"><h3>Costos operacionales · Real vs. PPTO</h3><p>MM CLP · COGS</p><div class="chart" id="chartCostos"></div><div class="legend"><span><i class="dot" style="background:#d64b54"></i>Real</span><span><i class="dot" style="background:#9aaabd"></i>Presupuesto</span></div></div><div class="chart-card"><h3>EBITDA estimado · Real vs. PPTO</h3><p>MM CLP · Ingresos − COGS − GAV</p><div class="chart" id="chartEbitda"></div><div class="legend"><span><i class="dot" style="background:#00936a"></i>Real</span><span><i class="dot" style="background:#9aaabd"></i>Presupuesto</span></div></div></div></div></section>
+<section id="costos" class="section">
+  <div class="panel">
+    <div class="panel-heading">
+      <div>
+        <h2>2 · Control de costos — <span data-up-name>CONSOLIDADO</span></h2>
+        <p>Monitoreo presupuestario por unidad productiva y grupo de cuenta. Fuente: registros cargados en la aplicación.</p>
+      </div>
+      <div class="pills"><span class="pill purple">MM CLP</span><span class="pill neutral" id="costContext">—</span></div>
+    </div>
+    <div class="cost-filter-row">
+      <div class="field"><label for="costScope">Período de comparación</label>
+        <select id="costScope"><option value="MONTH">Mes seleccionado</option><option value="YTD">Acumulado del año (YTD)</option></select>
+      </div>
+      <div class="field"><label for="costBaseline">Comparar contra</label>
+        <select id="costBaseline"><option value="PPTO">Presupuesto oficial (PPTO)</option></select>
+      </div>
+      <div class="field cost-filter-button"><label>Reporte</label><button class="button" id="costExportBtn" type="button">↓ Exportar detalle CSV</button></div>
+    </div>
+    <div class="cost-summary-grid" id="costSummary"></div>
+    <div class="section-label">COMPARACIÓN POR GRUPO DE CUENTA</div>
+    <div class="table-wrap"><table class="costs-table">
+      <thead><tr><th>Cuenta / Grupo</th><th class="num">Real</th><th class="num" id="costBaseHeader">PPTO</th><th class="num">Δ CLPm</th><th class="num">Δ %</th><th>Diagnóstico</th></tr></thead>
+      <tbody id="costBody"></tbody>
+    </table></div>
+    <p class="hint" id="costCaveat">Las cuentas Combustible, Arriendo maquinaria y Viruta son componentes del COGS: no se deben sumar otra vez al total. Δ = Real − base de comparación.</p>
+  </div>
+  <div class="columns">
+    <div class="panel">
+      <div class="panel-heading"><div><h2>Evolución mensual</h2><p>Comparación por cuenta durante el año seleccionado</p></div></div>
+      <div class="field"><label for="accountChart">Cuenta a analizar</label>
+        <select id="accountChart" style="max-width:320px"><option value="COGS">COGS total</option><option value="COMBUSTIBLE">Combustible</option><option value="ARRIENDO MAQUINARIA">Arriendo maquinaria</option><option value="VIRUTA">Viruta</option><option value="GAV">GAV</option><option value="INGRESOS">Ingresos</option></select>
+      </div>
+      <div class="chart" id="chartCuenta"></div>
+      <div class="legend"><span><i class="dot" style="background:#d64b54"></i>Real</span><span><i class="dot" style="background:#a1afc0"></i><span id="costChartBaseName">PPTO</span></span></div>
+    </div>
+    <div class="panel">
+      <h2 style="font-size:15px;margin:0 0 10px">Lectura ejecutiva de desviaciones</h2>
+      <div id="costAnalysis" class="cost-narrative"></div>
+      <p class="info" style="margin-top:12px">Para costos, Δ positiva = <b>sobrecosto</b>; Δ negativa = <b>ahorro</b>. Para ingresos, Δ positiva es favorable. El análisis de causas requiere evidencia operacional; no se asignan causas automáticamente.</p>
+    </div>
+  </div>
+  <div class="panel" id="costUPPanel">
+    <div class="panel-heading"><div><h2>Desglose por unidad productiva</h2><p>Útil al seleccionar CONSOLIDADO en el encabezado.</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Unidad productiva</th><th class="num">COGS real</th><th class="num" id="costUPBaseHeader">COGS PPTO</th><th class="num">Δ CLPm</th><th class="num">Δ %</th><th>Diagnóstico</th></tr></thead><tbody id="costUPBody"></tbody></table></div>
+  </div>
+  <div class="panel">
+    <div class="panel-heading"><div><h2>Detalle mensual de la cuenta seleccionada</h2><p>Valores en MM CLP; los meses sin datos se muestran como «—» y no como cero.</p></div><span class="pill neutral" id="costMonthlyAccount">COGS</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Mes</th><th class="num">Real</th><th class="num" id="costMonthlyBaseHeader">PPTO</th><th class="num">Δ CLPm</th><th class="num">Δ %</th><th>Diagnóstico</th></tr></thead><tbody id="costMonthlyBody"></tbody></table></div>
+  </div>
+</section>
+<section id="operacion" class="section"><div class="panel"><div class="panel-heading"><div><h2>Indicadores operacionales · <span data-up-name></span></h2><p>Relación entre volumen tratado, recursos utilizados y costos asociados.</p></div><div class="pills"><span class="pill">Litros / horas / toneladas / m³</span></div></div><div class="stat-grid" id="operationalKpis"></div><div class="section-label">RENDIMIENTO Y COSTO UNITARIO</div><div class="table-wrap"><table><thead><tr><th>Indicador</th><th class="num">Real</th><th class="num">PPTO</th><th>Modelo de cálculo</th></tr></thead><tbody id="operationalTable"></tbody></table></div></div></section>
+<section id="biodigestion" class="section">
+<div class="panel"><div class="panel-heading"><div><h2>4 · Biodigestión — <span style="color:var(--green)">BIOGAS</span></h2><p>Generación de biogás, toneladas tratadas, RILES y lodos. Datos del período seleccionado, separados de los demás procesos.</p></div><div class="pills"><span class="pill">UP: BIOGAS</span><span class="pill purple">Real · PPTO</span></div></div>
+<div class="strip"><b>Reporte de biodigestión</b><span>Esta pestaña siempre consulta la UP BIOGAS, aunque el filtro global esté en Consolidado u otra UP.</span></div>
+<div class="section-label">INDICADORES DEL MES</div><div class="stat-grid" id="bioKpis"></div>
+<div class="section-label">ACUMULADO ENERO A MES SELECCIONADO (YTD)</div><div class="stat-grid" id="bioYtd"></div>
+<div class="section-label">DETALLE POR ESCENARIO</div>
+<div class="table-wrap"><table><thead><tr><th>Indicador</th><th>Unidad</th><th class="num">REAL</th><th class="num">PPTO</th><th class="num">Desviación vs. PPTO</th></tr></thead><tbody id="bioTable"></tbody></table></div>
+</div><div class="panel"><div class="panel-heading"><div><h2>Generación mensual de biogás</h2><p>Comparación Real vs. PPTO del año seleccionado; sin valores inventados para esta sección.</p></div></div><div id="chartBiogas" class="chart" style="height:250px"></div>
+<p class="info">Importante: confirma si la generación se reporta en <b>m³ o Nm³</b> y la unidad de RILES. No mezcles toneladas de lodos con volumen de RILES ni sumes magnitudes distintas. Los ratios YTD deben calcularse con totales acumulados, no promedios mensuales.</p></div>
+</section>
+<section id="acopios" class="section"><div class="panel"><div class="panel-heading"><div><h2>Acopios y seguimiento del tratamiento</h2><p>Balance de existencias, tratamiento desde acopio y seguimiento de metas operacionales.</p></div><span class="pill neutral">Valores según carga</span></div><div class="stat-grid" id="stockKpis"></div><div class="section-label">EVOLUCIÓN DEL STOCK</div><div id="chartStock" class="chart" style="height:275px"></div><div class="info">La meta de agotamiento de acopios debe evaluarse con información validada. Las proyecciones de la SMA y el balance real deben mantenerse como escenarios separados; este prototipo no asume que ambos coincidan.</div></div></section>
+<section id="indicadores" class="section"><div class="panel"><div class="panel-heading"><div><h2>Catálogo de indicadores</h2><p>Definición, fórmula y origen de cada KPI que solicita la planta.</p></div><button class="button primary" id="newKpiBtn">＋ Nuevo KPI</button></div><div class="table-wrap"><table><thead><tr><th>Indicador</th><th>Modelo de cálculo</th><th>Origen esperado</th><th>Responsable</th><th class="num">Valor actual</th><th></th></tr></thead><tbody id="kpiCatalog"></tbody></table></div></div></section>
+<section id="datos" class="section"><div class="panel"><div class="panel-heading"><div><h2>Importación de datos · Excel y SAP</h2><p>La prueba vinculada lee automáticamente las hojas REAL y PPTO de ECOMAULE_PRUEBA_VINCULADA.xlsx desde el servidor local. SAP será una fuente independiente.</p></div><span class="pill neutral">Origen de prueba: Excel local</span></div><div class="upload"><div class="upload-card"><div style="font-size:33px">📊</div><strong>Cargar archivo Excel / SAP</strong><p>El Excel vinculado usa las hojas <b>REAL y PPTO</b>. Puedes seguir importando otro archivo manualmente para pruebas. El lector Excel requiere conexión a internet para cargar su biblioteca.</p><input id="fileInput" type="file" accept=".csv,.xlsx,.xls,.txt"><button id="importBtn" class="button primary">Importar registros</button><div id="importStatus" class="hint" style="margin-top:11px">No se ha cargado ningún archivo.</div></div><div class="upload-card"><div style="font-size:33px">🧾</div><strong>Plantilla de integración</strong><p>El CSV de seis columnas sigue siendo compatible. La hoja REAL contiene los datos efectivos y PPTO los presupuestados, con las UP en columnas.</p><button class="button" id="templateBtn">↓ Descargar plantilla CSV</button><p class="hint">Escenarios de esta prueba: REAL y PPTO. Las cifras deben venir en CLP, toneladas, litros, horas o m³ según la cuenta.</p></div></div><div class="section-label">REGISTRO MANUAL · PRUEBAS Y AJUSTES</div><form id="manualForm" class="form-grid"><div class="field"><label>Período</label><input name="periodo" type="month" value="2026-10" required></div><div class="field"><label>Unidad productiva</label><select name="up" required><option>LODOS</option><option>COMPOST</option><option>RELLENO</option><option>BIOGAS</option><option>VAL ENV</option><option>RCD</option></select></div><div class="field"><label>Cuenta</label><select name="cuenta" id="manualAccount" required></select></div><div class="field"><label>Escenario</label><select name="escenario"><option>REAL</option><option>PPTO</option></select></div><div class="field"><label>Valor (sin separadores de miles)</label><input type="number" name="valor" step="any" required placeholder="Ej.: 37480000"></div><div class="field" style="display:flex;align-items:end"><button type="submit" class="button primary">Guardar registro</button></div></form><div class="section-label">ADMINISTRACIÓN LOCAL</div><div class="flex"><button class="button" id="restoreDemo">Restaurar datos ficticios</button><button class="button danger" id="wipeBtn">Borrar todos los registros</button><span class="hint" id="dataDetails"></span></div><p class="info" style="margin-top:16px">🔒 <b>Seguridad:</b> esta demo almacena los datos en el almacenamiento local del navegador. No tiene usuarios, permisos, respaldo en servidor ni controles corporativos. No cargues información confidencial de VOLTA hasta implementar un entorno aprobado por TI.</p></div></section>
+<footer class="footer">ECOMAULE · Panel de Control de Gestión — prototipo local · No es un sistema oficial de VOLTA · Versión 0.4 · prueba de Excel vinculado</footer></main>
+<dialog id="kpiDialog"><div class="modal-head">Crear indicador personalizado</div><form id="customKpiForm"><div class="modal-body"><p class="hint">Configura un indicador simple como valor de una cuenta o una razón entre dos cuentas. El cálculo se realizará sobre la UP, período y escenario REAL seleccionados.</p><div class="form-grid" style="grid-template-columns:1fr 1fr"><div class="field"><label>Nombre del KPI</label><input name="nombre" required maxlength="75" placeholder="Ej.: Litros por tonelada"></div><div class="field"><label>Unidad visual</label><input name="unidad" required maxlength="20" placeholder="Ej.: L/t"></div><div class="field"><label>Numerador</label><select name="numerador" id="kpiNumerator"></select></div><div class="field"><label>Denominador</label><select name="denominador" id="kpiDenominator"><option value="">Sin denominador</option></select></div><div class="field"><label>Origen</label><select name="origen"><option>Excel / SAP</option><option>Excel operaciones</option><option>SAP</option></select></div><div class="field"><label>Responsable</label><input name="responsable" value="Control de Gestión"></div></div></div><div class="modal-foot"><button type="button" class="button" id="cancelKpi">Cancelar</button><button class="button primary" type="submit">Crear KPI</button></div></form></dialog>
+<script>
+'use strict';
+const UPS=['LODOS','COMPOST','RELLENO','BIOGAS','VAL ENV','RCD'];
+const ACCOUNTS=['INGRESOS','COGS','GAV','COMBUSTIBLE','ARRIENDO MAQUINARIA','VIRUTA','TON TRATADAS','LITROS COMBUSTIBLE','HORAS MAQUINA','VOLUMEN VIRUTA','ACOPIO FINAL','TRATAMIENTO ACOPIO','ACOPIO SMA','HORAS EXCAVADORA','VUELTAS TOLVA','GENERACION BIOGAS','TON BIODIGESTION','RILES TRATADOS','LODOS BIODIGESTION'];
+const FINANCIAL=new Set(['INGRESOS','COGS','GAV','COMBUSTIBLE','ARRIENDO MAQUINARIA','VIRUTA']);
+const LABEL={INGRESOS:'Ingresos',COGS:'Costos operacionales (COGS)',GAV:'Gastos de administración (GAV)',COMBUSTIBLE:'Combustible', 'ARRIENDO MAQUINARIA':'Arriendo maquinaria', VIRUTA:'Viruta', 'TON TRATADAS':'Toneladas tratadas', 'LITROS COMBUSTIBLE':'Litros combustible', 'HORAS MAQUINA':'Horas máquina','VOLUMEN VIRUTA':'Volumen de viruta (m³)','ACOPIO FINAL':'Stock real de acopio (t)','TRATAMIENTO ACOPIO':'Tratamiento desde acopio (t)','ACOPIO SMA':'Stock escenario SMA (t)','HORAS EXCAVADORA':'Horas de excavadora','VUELTAS TOLVA':'Vueltas reales de tolvas','GENERACION BIOGAS':'Generación de biogás','TON BIODIGESTION':'Toneladas tratadas en biodigestión','RILES TRATADOS':'RILES tratados','LODOS BIODIGESTION':'Lodos tratados en biodigestión'};
+const MONTHS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const KEY='ecomaule_analytics_v1';const CK='ecomaule_custom_kpis_v1';const UPDATE_KEY='ecomaule_updated_v1';const META_KEY='ecomaule_maestro_kpis_v03';
+let rows=[],custom=[],catalogMeta=[],isDemo=false,updated='';
+const $=id=>document.getElementById(id);
+const fmt=(n,d=1)=>Number.isFinite(n)?new Intl.NumberFormat('es-CL',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n):'—';
+const abbreviated=(n,d=1)=>n===null?'—':fmt(n/1e6,d);
+const monthName=p=>{let [y,m]=p.split('-');return `${['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][Number(m)-1]} ${y}`};
+const safe=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function seed(){let arr=[];const factors=[.94,.91,1.02,1.01,1.07,1.05,1.08,1.06,1.14,1.09,1.01,1.03];for(let j=0;j<12;j++){for(let [i,u] of UPS.entries()){let p=`2026-${String(j+1).padStart(2,'0')}`,f=factors[j],sale=[105,75,76,49,23,18][i]*1e6*f,cost=[68,56,52,38,14,12][i]*1e6*f,tons=[9000,7300,4100,6500,1900,800][i]*f;let v={INGRESOS:sale,COGS:cost,GAV:cost*.13,COMBUSTIBLE:cost*.27,'ARRIENDO MAQUINARIA':cost*.36,VIRUTA:cost*.12,'TON TRATADAS':tons,'LITROS COMBUSTIBLE':cost*.27/1160,'HORAS MAQUINA':cost*.36/35000,'VOLUMEN VIRUTA':cost*.12/6500,'ACOPIO FINAL':(u==='LODOS'||u==='COMPOST')?Math.max(0,62000-j*3800)*(u==='LODOS'?.7:.3):0,'TRATAMIENTO ACOPIO':(u==='LODOS'||u==='COMPOST')?4500*(u==='LODOS'?.7:.3):0,'ACOPIO SMA':(u==='LODOS'||u==='COMPOST')?Math.max(0,58000-j*3900)*(u==='LODOS'?.7:.3):0};for(let [a,val] of Object.entries(v)){for(let scenario of ['REAL','PPTO','PLAN O']){let factor=scenario==='PPTO'?(FINANCIAL.has(a)?(a==='INGRESOS'?.96:.95):.98):scenario==='PLAN O'?(FINANCIAL.has(a)?(a==='INGRESOS'?.96:.89):.98):1;arr.push({periodo:p,up:u,cuenta:a,escenario:scenario,valor:Math.round(val*factor),origen:'DEMO'})}}}}return arr}
+function load(){try{let raw=localStorage.getItem(KEY);rows=raw!==null?JSON.parse(raw):seed();custom=JSON.parse(localStorage.getItem(CK)||'[]');catalogMeta=JSON.parse(localStorage.getItem(META_KEY)||'[]');updated=localStorage.getItem(UPDATE_KEY)||''}catch(e){rows=seed();custom=[];catalogMeta=[]}isDemo=rows.some(r=>r.origen==='DEMO');}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(rows));localStorage.setItem(CK,JSON.stringify(custom));localStorage.setItem(META_KEY,JSON.stringify(catalogMeta));updated=new Date().toLocaleString('es-CL');localStorage.setItem(UPDATE_KEY,updated)}catch(e){alert('El navegador no pudo guardar todos los datos. Exporta el CSV de respaldo y reduce el tamaño del archivo.')} }
+function up(){return $('up').value}function period(){return $('period').value}
+function selectedRows(){return rows.filter(r=>(up()==='ALL'||r.up===up()))}
+function amount(account,scenario,p=period(),scopeUp=up()){let rec=rows.filter(r=>r.periodo===p&&(scopeUp==='ALL'||r.up===scopeUp)&&r.cuenta===account&&r.escenario===scenario);return rec.length?rec.reduce((s,r)=>s+r.valor,0):null}
+function ratio(a,b){return a===null||b===null||b===0?null:a/b}
+function minus(a,b){return a===null||b===null?null:a-b}
+function sumVals(a){return a.length&&a.every(v=>v!==null)?a.reduce((x,y)=>x+y,0):null}
+function sumYtd(account,scenario){let [year,mo]=period().split('-').map(Number),vals=[];for(let m=1;m<=mo;m++){let v=amount(account,scenario,`${year}-${String(m).padStart(2,'0')}`);if(v!==null)vals.push(v)}return vals.length?vals.reduce((a,b)=>a+b,0):null}
+function isStockAccount(a){return a==='ACOPIO FINAL'||a==='ACOPIO SMA'}
+function eb(sc,p=period()){return minus(minus(amount('INGRESOS',sc,p),amount('COGS',sc,p)),amount('GAV',sc,p))}
+function ebYtd(sc){return minus(minus(sumYtd('INGRESOS',sc),sumYtd('COGS',sc)),sumYtd('GAV',sc))}
+function metric(label,val,base,unit='MM CLP',type='higher',financial=true){let diff=val!==null&&base!==null&&base!==0?(val/base-1)*100:null;let good=diff!==null&&(type==='lower'?diff<=0:diff>=0);return `<article class="kpi"><span class="kpi-name">${safe(label.toUpperCase())}</span><div class="value">${val===null?'—':financial?abbreviated(val):fmt(val,unit==='%'?1:0)}<span class="unit">${safe(unit)}</span></div><div class="foot"><span>PPTO ${base===null?'—':financial?abbreviated(base):fmt(base,unit==='%'?1:0)}</span><span class="delta ${diff===null?'flat':good?'good':'bad'}">${diff===null?'s/d':(diff>0?'+':'')+fmt(diff,1)+'%'}</span></div></article>`}
+function renderOverview(){let real=k=>amount(k,'REAL'),ppto=k=>amount(k,'PPTO');$('monthlyKpis').innerHTML=[metric('Ingresos',real('INGRESOS'),ppto('INGRESOS')),metric('Costos operacionales',real('COGS'),ppto('COGS'),'MM CLP','lower'),metric('GAV',real('GAV'),ppto('GAV'),'MM CLP','lower'),metric('EBITDA estimado',eb('REAL'),eb('PPTO')),metric('Toneladas tratadas',real('TON TRATADAS'),ppto('TON TRATADAS'),'t','higher',false),metric('Costo unitario',ratio(real('COGS'),real('TON TRATADAS')),ratio(ppto('COGS'),ppto('TON TRATADAS')),'CLP/t','lower',false)].join('');
+$('ytdKpis').innerHTML=[metric('Ingresos YTD',sumYtd('INGRESOS','REAL'),sumYtd('INGRESOS','PPTO')),metric('Costos YTD',sumYtd('COGS','REAL'),sumYtd('COGS','PPTO'),'MM CLP','lower'),metric('EBITDA YTD',ebYtd('REAL'),ebYtd('PPTO')),metric('Toneladas YTD',sumYtd('TON TRATADAS','REAL'),sumYtd('TON TRATADAS','PPTO'),'t','higher',false),metric('Combustible YTD',sumYtd('COMBUSTIBLE','REAL'),sumYtd('COMBUSTIBLE','PPTO'),'MM CLP','lower'),metric('Arriendo maq. YTD',sumYtd('ARRIENDO MAQUINARIA','REAL'),sumYtd('ARRIENDO MAQUINARIA','PPTO'),'MM CLP','lower')].join('');
+let year=Number(period().slice(0,4));drawLine('chartIngresos',monthly('INGRESOS','REAL',year),monthly('INGRESOS','PPTO',year),'money','#146fb5');drawLine('chartCostos',monthly('COGS','REAL',year),monthly('COGS','PPTO',year),'money','#d64b54');drawLine('chartEbitda',Array.from({length:12},(_,j)=>eb('REAL',`${year}-${String(j+1).padStart(2,'0')}`)),Array.from({length:12},(_,j)=>eb('PPTO',`${year}-${String(j+1).padStart(2,'0')}`)),'money','#00936a');}
+function monthly(account,scenario,year){return Array.from({length:12},(_,j)=>amount(account,scenario,`${year}-${String(j+1).padStart(2,'0')}`))}
+function drawLine(element,vals,budget,units='money',color='#146fb5'){let el=$(element),all=[...vals,...budget].filter(x=>x!==null&&Number.isFinite(x));if(!all.length){el.innerHTML='<div class="empty">Sin información para este período</div>';return;}let W=600,H=235,left=48,right=12,top=18,bottom=38;let max=Math.max(...all,0),min=Math.min(...all,0),r=max-min||1,pad=r*.1;max+=pad;min-=pad;let pos=(i,v)=>[left+(W-left-right)*i/11,top+(H-top-bottom)*(max-v)/(max-min)];let transform=v=>units==='money'?v/1e6:v;let axis=Array.from({length:5},(_,i)=>{let y=top+(H-top-bottom)*i/4,value=max-(max-min)*i/4;return `<line x1="${left}" x2="${W-right}" y1="${y}" y2="${y}" stroke="#e6edf5" stroke-dasharray="4,4"/><text x="${left-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#8796a9">${fmt(transform(value),0)}</text>`}).join('');let ticks=MONTHS.map((m,i)=>`<text x="${pos(i,0)[0]}" y="${H-14}" text-anchor="middle" fill="#8594a8" font-size="11">${m}</text>`).join('');function path(a,c,dash){let segments=[],segment=[];a.forEach((v,i)=>{if(v===null){if(segment.length)segments.push(segment);segment=[]}else{let [x,y]=pos(i,v);segment.push([x,y])}});if(segment.length)segments.push(segment);return segments.map(s=>`<polyline points="${s.map(p=>p.join(',')).join(' ')}" fill="none" stroke="${c}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" ${dash?'stroke-dasharray="7,5"':''}/>`).join('')+a.map((v,i)=>{if(v===null)return '';let [x,y]=pos(i,v);return `<circle cx="${x}" cy="${y}" r="3.8" stroke="${c}" stroke-width="2.5" fill="white"><title>${MONTHS[i]}: ${fmt(transform(v),2)}</title></circle>`}).join('')};el.innerHTML=`<svg role="img" aria-label="Gráfico de evolución mensual" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${axis}${ticks}${path(budget,'#a1afc0',true)}${path(vals,color,false)}</svg>`}
+const COST_ACCOUNTS=['COGS','COMBUSTIBLE','ARRIENDO MAQUINARIA','VIRUTA','GAV','INGRESOS'];
+function costScope(){return $('costScope').value}
+function costBase(){return $('costBaseline').value}
+function costValue(account,scenario,unit=up(),p=period()){
+  if(costScope()==='MONTH')return amount(account,scenario,p,unit);
+  const year=Number(p.slice(0,4)),maxMonth=Number(p.slice(5,7));
+  let total=0,found=false;
+  for(let m=1;m<=maxMonth;m++){
+    const v=amount(account,scenario,`${year}-${String(m).padStart(2,'0')}`,unit);
+    if(v!==null){total+=v;found=true;}
+  }
+  return found?total:null;
+}
+function costDelta(real,base){return real===null||base===null?null:real-base}
+function costPercent(real,base){return real===null||base===null||base===0?null:(real-base)/Math.abs(base)*100}
+function costMoney(v){return v===null?'—':fmt(v/1e6,2)}
+function costSigned(v){return v===null?'—':`${v>0?'+':''}${costMoney(v)}`}
+function costPercentLabel(v){return v===null?'—':`${v>0?'+':''}${fmt(v,1)}%`}
+function costDiagnosis(d,key='COGS'){
+  if(d===null)return {text:'Sin base comparable',cls:'missing'};
+  if(Math.abs(d)<.005)return {text:'En línea',cls:'missing'};
+  const isCost=key!=='INGRESOS';
+  const over=isCost?d>0:d<0;
+  return {text:over?(isCost?'Sobrecosto':'Ingreso bajo base'):(isCost?'Ahorro':'Ingreso sobre base'),cls:over?'over':'save'};
+}
+function costRow(label,real,base,key){
+  const d=costDelta(real,base),pct=costPercent(real,base),st=costDiagnosis(d,key),color=st.cls==='over'?'negative':st.cls==='save'?'positive':'';
+  return `<tr><td>${safe(label)}</td><td class="num">${costMoney(real)}</td><td class="num">${costMoney(base)}</td><td class="num ${color}">${costSigned(d)}</td><td class="num ${color}">${costPercentLabel(pct)}</td><td><span class="cost-status ${st.cls}">${safe(st.text)}</span></td></tr>`;
+}
+function costSummaryCard(name,value,detail,diagnosis){
+  const status=diagnosis?`<div class="status ${diagnosis.cls==='over'?'negative':diagnosis.cls==='save'?'positive':''}">${safe(diagnosis.text)}</div>`:'';
+  return `<article class="cost-summary"><div class="name">${safe(name)}</div><div class="number">${safe(value)}</div><div class="detail">${safe(detail)}</div>${status}</article>`;
+}
+function renderCosts(){
+  const base=costBase(),scope=costScope(),year=Number(period().slice(0,4)),pName=scope==='MONTH'?monthName(period()):`Enero a ${monthName(period())}`;
+  $('costContext').textContent=pName;
+  $('costBaseHeader').textContent=base;
+  $('costMonthlyBaseHeader').textContent=base;
+  $('costUPBaseHeader').textContent=`COGS ${base}`;
+  $('costChartBaseName').textContent=base;
+  const val=(key,sc,unit=up())=>costValue(key,sc,unit);
+  const mainReal=val('COGS','REAL'),mainBase=val('COGS',base),diff=costDelta(mainReal,mainBase),diag=costDiagnosis(diff),pct=costPercent(mainReal,mainBase);
+  const tons=val('TON TRATADAS','REAL');
+  $('costSummary').innerHTML=[
+    costSummaryCard('COGS real',mainReal===null?'—':costMoney(mainReal)+' MM','Costo operacional del período'),
+    costSummaryCard(`COGS ${base}`,mainBase===null?'—':costMoney(mainBase)+' MM','Base presupuestaria seleccionada'),
+    costSummaryCard('Desviación COGS',diff===null?'—':costSigned(diff)+' MM',`Variación: ${costPercentLabel(pct)}`,diag),
+    costSummaryCard('Costo unitario',mainReal!==null&&tons>0?fmt(mainReal/tons,0)+' CLP/t':'—','COGS real ÷ toneladas tratadas')
+  ].join('');
+  $('costBody').innerHTML=COST_ACCOUNTS.map(key=>costRow(LABEL[key],val(key,'REAL'),val(key,base),key)).join('');
+  const account=$('accountChart').value;
+  $('costMonthlyAccount').textContent=LABEL[account];
+  drawLine('chartCuenta',monthly(account,'REAL',year),monthly(account,base,year),'money','#d64b54');
+  $('costMonthlyBody').innerHTML=MONTHS.map((m,i)=>{
+    const p=`${year}-${String(i+1).padStart(2,'0')}`;
+    return costRow(m,amount(account,'REAL',p),amount(account,base,p),account);
+  }).join('');
+  const panel=$('costUPPanel');panel.style.display=up()==='ALL'?'block':'none';
+  if(up()==='ALL')$('costUPBody').innerHTML=UPS.map(unit=>costRow(unit,val('COGS','REAL',unit),val('COGS',base,unit),'COGS')).join('');
+  const hasReal=rows.some(r=>r.escenario==='REAL' && (up()==='ALL'||r.up===up()) && r.periodo.slice(0,4)===String(year));
+  const hasBase=rows.some(r=>r.escenario===base && (up()==='ALL'||r.up===up()) && r.periodo.slice(0,4)===String(year));
+  let messages=[];
+  if(diff!==null){
+    messages.push(`<p><b>COGS:</b> ${diff>0?'sobrecosto':diff<0?'ahorro':'sin desviación'} de <b>${safe(costMoney(Math.abs(diff)))} MM CLP</b> (${safe(costPercentLabel(pct))} vs. ${safe(base)}). Las causas deben validarse con los responsables de Operaciones.</p>`);
+  }else messages.push('<p>Sin información suficiente de COGS real y base para cuantificar la desviación.</p>');
+  const details=['COMBUSTIBLE','ARRIENDO MAQUINARIA','VIRUTA'].map(key=>({key,d:costDelta(val(key,'REAL'),val(key,base))})).filter(x=>x.d!==null).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+  if(details.length){const item=details[0];messages.push(`<p><b>Mayor variación absoluta entre las cuentas de detalle disponibles:</b> ${safe(LABEL[item.key])}, ${item.d>0?'sobrecosto':'ahorro'} de <b>${safe(costMoney(Math.abs(item.d)))} MM CLP</b>. Estas partidas ya forman parte del COGS si así están definidas en tu EERR.</p>`);}
+  if(scope==='YTD')messages.push('<p><b>Advertencia YTD:</b> se acumulan solo los meses con registros. Valida que Real y la base tengan idéntica cobertura mensual antes de presentar los resultados.</p>');
+  if(!hasReal||!hasBase)messages.push(`<p>Faltan registros del año ${year}: ${!hasReal?'REAL ':''}${!hasBase?base:''}.</p>`);
+  $('costAnalysis').innerHTML=messages.join('');
+  $('costCaveat').textContent=`Montos en millones de CLP. Δ = REAL − ${base}. Combustible, maquinaria y viruta son componentes del COGS y NO se suman nuevamente. Este prototipo usa grupos de cuenta, no códigos contables SAP.`;
+}
+function exportCosts(){
+  const baseline=costBase(),items=[['Cuenta / Grupo','Real_CLPm',`${baseline}_CLPm`,'Delta_CLPm','Delta_pct','Diagnostico']];
+  for(const k of COST_ACCOUNTS){let r=costValue(k,'REAL'),b=costValue(k,baseline),d=costDelta(r,b),pc=costPercent(r,b);items.push([LABEL[k],r===null?'':(r/1e6).toFixed(4),b===null?'':(b/1e6).toFixed(4),d===null?'':(d/1e6).toFixed(4),pc===null?'':pc.toFixed(2),costDiagnosis(d,k).text]);}
+  const csv=items.map(r=>r.map(csvEscape).join(';')).join('\r\n');
+  download(csv,`ecomaule_costos_${up()}_${period()}_${costScope().toLowerCase()}_${baseline.replace(' ','_')}.csv`);
+}
+function renderOperations(){let a=k=>amount(k,'REAL'),b=k=>amount(k,'PPTO');let specs=[['Toneladas tratadas','TON TRATADAS','t'],['Combustible','COMBUSTIBLE','MM CLP'],['Litros combustible','LITROS COMBUSTIBLE','L'],['Horas máquina','HORAS MAQUINA','h'],['Arriendo maquinaria','ARRIENDO MAQUINARIA','MM CLP'],['Viruta','VIRUTA','MM CLP'],['Volumen viruta','VOLUMEN VIRUTA','m³'],['Tratamiento de acopio','TRATAMIENTO ACOPIO','t']];$('operationalKpis').innerHTML=specs.map(([name,k,unit])=>`<div class="stat"><label>${safe(name)}</label><b>${a(k)===null?'—':unit==='MM CLP'?abbreviated(a(k),2):fmt(a(k),0)}</b><small>${unit} · PPTO: ${b(k)===null?'—':unit==='MM CLP'?abbreviated(b(k),2):fmt(b(k),0)}</small></div>`).join('');let calcs=[['Costo operacional unitario','COGS','TON TRATADAS','CLP/t','COGS / toneladas tratadas'],['Costo por litro combustible','COMBUSTIBLE','LITROS COMBUSTIBLE','CLP/L','Combustible / litros'],['Costo por hora máquina','ARRIENDO MAQUINARIA','HORAS MAQUINA','CLP/h','Arriendo maquinaria / horas'],['Consumo unitario de viruta','VOLUMEN VIRUTA','TON TRATADAS','m³/t','Volumen viruta / toneladas'],['Costo unitario de viruta','VIRUTA','TON TRATADAS','CLP/t','Viruta / toneladas']];$('operationalTable').innerHTML=calcs.map(([name,n,d,unit,formula])=>{let v=ratio(a(n),a(d)),pb=ratio(b(n),b(d));return `<tr><td><b>${safe(name)}</b></td><td class="num">${v===null?'—':fmt(v,unit==='m³/t'?4:1)} ${unit}</td><td class="num">${pb===null?'—':fmt(pb,unit==='m³/t'?4:1)} ${unit}</td><td>${safe(formula)}</td></tr>`}).join('')}
+
+const BIO_METRICS=[['GENERACION BIOGAS','Generación de biogás','m³'],['TON BIODIGESTION','Toneladas tratadas','t'],['RILES TRATADOS','RILES tratados','m³'],['LODOS BIODIGESTION','Lodos tratados','t']];
+function bioSumYtd(account,scenario){const yr=Number(period().slice(0,4)),max=Number(period().slice(5,7));let vals=[];for(let m=1;m<=max;m++){let v=amount(account,scenario,`${yr}-${String(m).padStart(2,'0')}`,'BIOGAS');if(v!==null)vals.push(v)}return vals.length?vals.reduce((a,b)=>a+b,0):null}
+function renderBiogas(){
+ const defined=new Set(BIO_METRICS.map(x=>x[0]));
+ const extras=catalogMeta.filter(m=>m.tipo==='DIRECTO'&&m.modulo==='BIODIGESTION'&&m.activo!=='NO'&&!defined.has(m.codigo)).map(m=>[m.codigo,m.nombre,m.unidad]);
+ const metrics=[...BIO_METRICS,...extras],rowHtml=[];
+ $('bioKpis').innerHTML=metrics.map(([code,label,unit])=>{const real=amount(code,'REAL',period(),'BIOGAS'),base=amount(code,'PPTO',period(),'BIOGAS');return `<div class="stat"><label>${safe(label)}</label><b>${real===null?'—':fmt(real,unit==='t'?1:0)}</b><small>${safe(unit)} · PPTO: ${base===null?'—':fmt(base,unit==='t'?1:0)}</small></div>`}).join('');
+ $('bioYtd').innerHTML=metrics.map(([code,label,unit])=>{const real=bioSumYtd(code,'REAL'),base=bioSumYtd(code,'PPTO');return `<div class="stat"><label>${safe(label)} · YTD</label><b>${real===null?'—':fmt(real,unit==='t'?1:0)}</b><small>${safe(unit)} · PPTO YTD: ${base===null?'—':fmt(base,unit==='t'?1:0)}</small></div>`}).join('');
+ $('bioTable').innerHTML=metrics.map(([code,label,unit])=>{let vals=['REAL','PPTO'].map(s=>amount(code,s,period(),'BIOGAS'));let delta=vals[0]===null||vals[1]===null?null:vals[0]-vals[1];return `<tr><td><b>${safe(label)}</b></td><td>${safe(unit)}</td>${vals.map(v=>`<td class="num">${v===null?'—':fmt(v,1)}</td>`).join('')}<td class="num">${delta===null?'—':`${delta>0?'+':''}${fmt(delta,1)}`}</td></tr>`}).join('');
+ const year=Number(period().slice(0,4)),series=sc=>Array.from({length:12},(_,i)=>amount('GENERACION BIOGAS',sc,`${year}-${String(i+1).padStart(2,'0')}`,'BIOGAS'));
+ drawLine('chartBiogas',series('REAL'),series('PPTO'),'count','#079566');
+}
+function renderStock(){let a=k=>amount(k,'REAL'),s=k=>amount(k,'PPTO');$('stockKpis').innerHTML=[['Stock real al cierre',a('ACOPIO FINAL'),'t'],['Stock escenario SMA',a('ACOPIO SMA'),'t'],['Tratamiento desde acopio',a('TRATAMIENTO ACOPIO'),'t'],['Tratamiento total',a('TON TRATADAS'),'t']].map(([name,v,unit])=>`<div class="stat"><label>${safe(name)}</label><b>${v===null?'—':fmt(v,0)}</b><small>${unit} · ${safe(period())}</small></div>`).join('');let y=Number(period().slice(0,4));drawLine('chartStock',monthly('ACOPIO FINAL','REAL',y),monthly('ACOPIO SMA','REAL',y),'stock','#146fb5')}
+const BASEKPIS=[['Ingresos','INGRESOS',null,'MM CLP','SAP / Excel','Control de Gestión'],['COGS','COGS',null,'MM CLP','SAP / Excel','Control de Gestión'],['EBITDA estimado',null,null,'MM CLP','SAP / Excel','Control de Gestión'],['Costo operacional unitario','COGS','TON TRATADAS','CLP/t','SAP + Operaciones','Control de Gestión'],['Costo combustible / litro','COMBUSTIBLE','LITROS COMBUSTIBLE','CLP/L','SAP + Excel','Operaciones'],['Arriendo / hora máquina','ARRIENDO MAQUINARIA','HORAS MAQUINA','CLP/h','SAP + Excel','Operaciones'],['Consumo viruta / tonelada','VOLUMEN VIRUTA','TON TRATADAS','m³/t','Excel','Operaciones'],['Stock real acopio','ACOPIO FINAL',null,'t','Operaciones','Operaciones'],['Stock escenario SMA','ACOPIO SMA',null,'t','Plan SMA','Operaciones'],['Horas excavadora','HORAS EXCAVADORA',null,'h','Excel maquinaria','Operaciones'],['Vueltas tolvas','VUELTAS TOLVA',null,'vueltas','Excel maquinaria','Operaciones'],['Generación de biogás','GENERACION BIOGAS',null,'m³','Excel biodigestión','Operaciones'],['Toneladas tratadas en biodigestión','TON BIODIGESTION',null,'t','Excel biodigestión','Operaciones'],['RILES tratados','RILES TRATADOS',null,'m³','Excel biodigestión','Operaciones'],['Lodos tratados en biodigestión','LODOS BIODIGESTION',null,'t','Excel biodigestión','Operaciones']];
+function calculateKpi(k){
+ if(k.special==='ebitda')return eb('REAL');
+ const scope=(k.modulo==='BIODIGESTION')?'BIOGAS':up();
+ if(k.formula){let parts=String(k.formula).split('/').map(x=>normalizeAccount(x));if(parts.length===2){return ratio(amount(parts[0],'REAL',period(),scope),amount(parts[1],'REAL',period(),scope))}if(parts.length===1)return amount(parts[0],'REAL',period(),scope);return null}
+ if(k.numerador===null)return eb('REAL');let v=amount(k.numerador,'REAL',period(),scope);return k.denominador?ratio(v,amount(k.denominador,'REAL',period(),scope)):v
+}
+function renderCatalog(){
+ const standard=BASEKPIS.map(([nombre,numerador,denominador,unidad,origen,responsable])=>({nombre,numerador,denominador,unidad,origen,responsable,builtin:true,special:numerador===null?'ebitda':null}));
+ const builtinCodes=new Set(BASEKPIS.map(x=>x[1]).filter(Boolean));
+ const fromExcel=catalogMeta.filter(m=>m.activo!=='NO' && (m.tipo==='CALCULADO'||!builtinCodes.has(m.codigo))).map(m=>({nombre:m.nombre,numerador:m.codigo,denominador:null,formula:m.formula,unidad:m.unidad,origen:'Excel maestro · '+m.modulo,responsable:'Operaciones',builtin:true,modulo:m.modulo}));
+ $('kpiCatalog').innerHTML=[...standard,...fromExcel,...custom].map((k,i)=>{
+  let value=calculateKpi(k),money=k.unidad==='MM CLP',formula=k.special==='ebitda'?'INGRESOS − COGS − GAV':k.formula|| (k.denominador?`${k.numerador} / ${k.denominador}`:k.numerador);
+  return `<tr><td><b>${safe(k.nombre)}</b></td><td>${safe(formula||'')}</td><td>${safe(k.origen||'No definido')}</td><td>${safe(k.responsable||'Control de Gestión')}</td><td class="num"><b>${value===null?'—':money?abbreviated(value,2):fmt(value,2)}</b> ${safe(k.unidad)}</td><td>${k.builtin?'':`<button class="button small danger" data-remove="${i-standard.length-fromExcel.length}">Eliminar</button>`}</td></tr>`
+ }).join('')
+}
+function render(){let u=up(),p=period();$('upCaption').textContent=u==='ALL'?'CONSOLIDADO':u;$('upHint').textContent=u==='ALL'?'Todas las unidades productivas':'Unidad productiva de Ecomaule';$('periodCaption').textContent=monthName(p);document.querySelectorAll('[data-up-name]').forEach(e=>e.textContent=u==='ALL'?'CONSOLIDADO':u);document.querySelectorAll('[data-period-name]').forEach(e=>e.textContent=monthName(p));$('recordCount').textContent=`${selectedRows().filter(r=>r.periodo===p).length} registros para el período`;isDemo=rows.some(r=>r.origen==='DEMO');$('demoBanner').classList.toggle('hidden',!isDemo);$('updated').textContent=updated?`Último cambio local: ${updated}`:'Sin conexión directa a SAP';$('sources').textContent=isDemo?'Datos de demostración':rows.length?'Datos importados / locales':'Sin datos cargados';$('dataDetails').textContent=`${rows.length.toLocaleString('es-CL')} registros locales; ${new Set(rows.map(r=>r.periodo)).size} períodos; ${new Set(rows.map(r=>r.up)).size} UP`;renderOverview();renderCosts();renderOperations();renderBiogas();renderStock();renderCatalog()}
+function activate(tab){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));document.querySelectorAll('.section').forEach(t=>t.classList.toggle('active',t.id===tab));}
+function key(r){return [r.periodo,r.up,r.cuenta,r.escenario].join('|')}
+function merge(incoming){let map=new Map(rows.map(r=>[key(r),r]));for(let r of incoming)map.set(key(r),r);rows=[...map.values()].sort((a,b)=>key(a).localeCompare(key(b)));persist();render()}
+function normalizeAccount(v){let t=String(v??'').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[_-]/g,' ').replace(/\s+/g,' ');let aliases={'COSTOS':'COGS','COSTOS OPERACIONALES':'COGS','COSTOS DE VENTA':'COGS','GASTOS ADMINISTRACION':'GAV','ARRIENDO MAQ':'ARRIENDO MAQUINARIA','MAQUINARIA':'ARRIENDO MAQUINARIA','TONELADAS':'TON TRATADAS','TONELADAS TRATADAS':'TON TRATADAS','TON TRATADAS':'TON TRATADAS','LITROS':'LITROS COMBUSTIBLE','HORAS MAQUINARIA':'HORAS MAQUINA','M3 VIRUTA':'VOLUMEN VIRUTA','ACOPIO REAL':'ACOPIO FINAL','ACOPIO PROYECTADO SMA':'ACOPIO SMA','STOCK SMA':'ACOPIO SMA'};return aliases[t]||t}
+function normalizedRow(obj,source,extraAllowed=null){let o={};for(let [k,v] of Object.entries(obj)){let clean=String(k).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s/g,'_');o[clean]=v}let per=String(o.periodo??o.period??o.mes??'').trim();if(/^\d{4}\/\d{1,2}$/.test(per))per=per.replace('/','-');if(/^\d{4}-\d$/.test(per))per=per.replace(/-(\d)$/,'-0$1');let unit=String(o.up??o.unidad??o.unidad_productiva??'').trim().toUpperCase();let account=normalizeAccount(o.cuenta??o.account??o.indicador);let scenario=String(o.escenario??o.scenario??o.tipo??'').trim().toUpperCase().replace(/_/g,' ');if(scenario==='PRESUPUESTO')scenario='PPTO';if(scenario==='PLAN_O')scenario='PLAN O';let raw=o.valor??o.monto??o.value;let value=typeof raw==='number'?raw:Number(String(raw??'').trim().replace(/\s/g,'').replace(/\./g,'').replace(',','.'));if(!/^20\d{2}-(0[1-9]|1[0-2])$/.test(per)||!UPS.includes(unit)||!(ACCOUNTS.includes(account)||(extraAllowed&&extraAllowed.has(account))||catalogMeta.some(m=>m.codigo===account&&m.tipo==='DIRECTO'))||!['REAL','PPTO','PLAN O','FORECAST'].includes(scenario)||raw===undefined||raw===''||!Number.isFinite(value))return null;return {periodo:per,up:unit,cuenta:account,escenario:scenario,valor:value,origen:source}}
+function csvFields(line,sep){let fields=[],cur='',quoted=false;for(let i=0;i<line.length;i++){let c=line[i];if(c==='"'){if(quoted&&line[i+1]==='"'){cur+='"';i++}else quoted=!quoted}else if(c===sep&&!quoted){fields.push(cur);cur=''}else cur+=c}fields.push(cur);return fields}
+function csvParse(text){let lines=[],cur='',inside=false;for(let i=0;i<text.length;i++){let c=text[i];if(c==='"'){if(inside&&text[i+1]==='"'){cur+='"';i++;continue}inside=!inside}if((c==='\n'||c==='\r')&&!inside){if(cur.trim())lines.push(cur);cur='';if(c==='\r'&&text[i+1]==='\n')i++;}else cur+=c}if(cur.trim())lines.push(cur);if(!lines.length)return[];let sep=(lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?';':',';let headers=csvFields(lines[0],sep);return lines.slice(1).map(l=>Object.fromEntries(csvFields(l,sep).map((v,i)=>[headers[i],v])))}
+function csvEscape(s){let v=String(s??'');return /[;\n\r"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}
+function download(text,filename,mime='text/csv;charset=utf-8'){let blob=new Blob(['\ufeff',text],{type:mime}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)}
+const columns=['periodo','up','cuenta','escenario','valor','origen'];function toCsv(data){return [columns.join(';'),...data.map(r=>columns.map(k=>csvEscape(r[k])).join(';'))].join('\r\n')}
+let sheetPromise=null;function ensureXlsx(){if(window.XLSX)return Promise.resolve(window.XLSX);if(sheetPromise)return sheetPromise;sheetPromise=new Promise((resolve,reject)=>{let s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';s.onload=()=>window.XLSX?resolve(window.XLSX):reject(new Error('Biblioteca XLSX no disponible'));s.onerror=()=>reject(new Error('No se pudo descargar el lector de Excel. Exporta el archivo a CSV UTF-8.'));document.head.appendChild(s)});return sheetPromise}
+
+function parseCatalog(book,XLSX){
+ const sheet=book.Sheets['MAESTRO_KPI'];if(!sheet)return null;
+ const values=XLSX.utils.sheet_to_json(sheet,{defval:''});
+ const parsed=[];
+ for(const row of values){
+  const code=normalizeAccount(row.codigo||row.CODIGO||'');
+  if(!code||code.length>90)continue;
+  const tipo=String(row.tipo||row.TIPO||'DIRECTO').trim().toUpperCase();
+  if(!['DIRECTO','CALCULADO'].includes(tipo))continue;
+  parsed.push({codigo:code,nombre:String(row.nombre||code).slice(0,100),tipo,unidad:String(row.unidad||'').slice(0,20),modulo:String(row.modulo||'GENERAL').trim().toUpperCase(),formula:String(row.formula||code).trim(),activo:String(row.activo||'SI').trim().toUpperCase()});
+ }
+ return parsed;
+}
+function parseScenarioWorkbook(book,XLSX,fileName,meta){
+ const names=['REAL','PPTO'];
+ const existing=names.filter(sc=>book.Sheets[sc]);
+ if(!existing.length)return null;
+ const allowed=new Set([...ACCOUNTS,...(meta||catalogMeta).filter(m=>m.tipo==='DIRECTO').map(m=>m.codigo)]);
+ const data=[],warnings=[];
+ const seen=new Set();let nonempty=0;
+ for(const scenario of existing){
+  const list=XLSX.utils.sheet_to_json(book.Sheets[scenario],{defval:''});
+  for(let idx=0;idx<list.length;idx++){
+   const record=list[idx],periodVal=String(record.periodo??record.Periodo??'').trim(),indicator=normalizeAccount(record.indicador??record.Indicador??'');
+   if(!periodVal&&!indicator)continue;
+   for(const unit of UPS){
+    const raw=record[unit];
+    if(raw===undefined||raw===null||String(raw).trim()==='')continue;
+    nonempty++;
+    if(!allowed.has(indicator)){warnings.push(`${scenario}, fila ${idx+2}: indicador no registrado: ${indicator}`);continue}
+    const converted=normalizedRow({periodo:periodVal,up:unit,cuenta:indicator,escenario:scenario,valor:raw},`${fileName} · ${scenario}`,allowed);
+    if(!converted){warnings.push(`${scenario}, fila ${idx+2}: período, valor o indicador no válido`);continue}
+    const k=key(converted);
+    if(seen.has(k)){warnings.push(`${scenario}, fila ${idx+2}: registro duplicado ${k}`);continue}
+    seen.add(k);data.push(converted);
+   }
+  }
+ }
+ return {data,warnings,nonempty,sheets:existing};
+}
+async function importFile(){
+ const f=$('fileInput').files[0];if(!f){$('importStatus').textContent='Selecciona un archivo primero.';return}
+ try{
+  $('importStatus').textContent='Leyendo y validando el archivo...';let valid=[],invalid=0,status='',newMeta=null;
+  if(/\.csv$|\.txt$/i.test(f.name)){
+   let data=csvParse(await f.text());valid=data.map(r=>normalizedRow(r,f.name)).filter(Boolean);invalid=data.length-valid.length;
+   status='CSV de seis columnas';
+  }else if(/\.xlsx?$|\.xls$/i.test(f.name)){
+   let XLSX=await ensureXlsx(),buffer=await f.arrayBuffer(),book=XLSX.read(buffer,{type:'array'});
+   newMeta=parseCatalog(book,XLSX);
+   let parsed=parseScenarioWorkbook(book,XLSX,f.name,newMeta);
+   if(parsed){valid=parsed.data;invalid=parsed.warnings.length;status=`Excel matriz · ${parsed.sheets.join(', ')}`;if(parsed.warnings.length)console.warn('Advertencias importación',parsed.warnings.slice(0,50));}
+   else{
+    let chosen=book.Sheets['CARGA_PANEL']||book.Sheets[book.SheetNames[0]],data=XLSX.utils.sheet_to_json(chosen,{defval:''});
+    valid=data.map(r=>normalizedRow(r,f.name)).filter(Boolean);invalid=data.length-valid.length;status='Excel formato tradicional de seis columnas';
+   }
+  }else throw new Error('Formato no soportado.');
+  if(!valid.length)throw new Error(`No se encontraron valores numéricos válidos. Revisa las celdas, el período AAAA-MM y los indicadores. Filas/celdas rechazadas: ${invalid}.`);
+  if(newMeta)catalogMeta=newMeta;
+  if(isDemo)rows=rows.filter(r=>r.origen!=='DEMO');
+  merge(valid);
+  $('importStatus').textContent=`✓ ${valid.length} datos importados desde ${status}. ${invalid} advertencias/rechazos. Origen: ${f.name}.`;
+  activate('resumen');
+ }catch(e){$('importStatus').textContent=`Error: ${e.message}`;console.error(e)}
+}
+
+// Vinculación de prueba. El servidor local lee SIEMPRE el Excel guardado en disco.
+// No requiere editar el código al cambiar los valores de las celdas.
+async function actualizarExcel(silencioso=false){
+ const btn=$('syncExcelBtn'),info=$('syncExcelInfo');
+ if(btn)btn.disabled=true;
+ if(info)info.textContent='Leyendo el Excel guardado...';
+ try{
+  const respuesta=await fetch('/api/maestro?momento='+Date.now(),{cache:'no-store'});
+  const dato=await respuesta.json();
+  if(!respuesta.ok)throw new Error(dato.error||'No se pudo acceder al Excel');
+  if(!Array.isArray(dato.registros)||!dato.registros.length)throw new Error('Excel sin registros válidos');
+  // Este ensayo usa el Excel como FUENTE MAESTRA. Reemplazamos la carga anterior
+  // para que las celdas vaciadas o eliminadas desaparezcan y no queden datos obsoletos.
+  rows=dato.registros;
+  persist();
+  render();
+  const aviso=dato.advertencias?.length?` · ${dato.advertencias.length} advertencia(s)`:'';
+  if(info)info.textContent=`${dato.archivo} · ${dato.total} valores · Excel guardado ${dato.actualizado_archivo} · lectura ${dato.sincronizado}${aviso}`;
+  $('sources').textContent='Excel local vinculado';
+  $('updated').textContent=`Sincronizado: ${dato.sincronizado}`;
+  if(!silencioso)activate('resumen');
+ }catch(error){
+  console.error('Error leyendo Excel',error);
+  if(info)info.textContent=`No se pudo actualizar: ${error.message}. Abre el panel mediante INICIAR_PANEL.bat, no con doble clic en HTML.`;
+  if(!silencioso)alert('No se pudo actualizar el Excel: '+error.message);
+ }finally{if(btn)btn.disabled=false;}
+}
+
+function init(){load();ACCOUNTS.forEach(k=>{for(let id of ['manualAccount','kpiNumerator','kpiDenominator']){let opt=document.createElement('option');opt.value=k;opt.textContent=`${LABEL[k]} (${k})`;$(id).appendChild(opt)}});$('up').addEventListener('change',render);$('period').addEventListener('change',()=>{document.querySelector('#manualForm [name=periodo]').value=period();render()});$('accountChart').addEventListener('change',renderCosts);$('costScope').addEventListener('change',renderCosts);$('costBaseline').addEventListener('change',renderCosts);$('costExportBtn').addEventListener('click',exportCosts);document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>activate(t.dataset.tab)));$('syncExcelBtn').onclick=()=>actualizarExcel(false);$('jumpUpload').onclick=()=>activate('datos');$('importBtn').onclick=importFile;$('exportBtn').onclick=()=>download(toCsv(rows),`ecomaule_respaldo_${period()}.csv`);$('templateBtn').onclick=()=>download(toCsv([{periodo:'2026-10',up:'LODOS',cuenta:'COGS',escenario:'PPTO',valor:37480000,origen:'Excel'}, {periodo:'2026-10',up:'LODOS',cuenta:'COGS',escenario:'REAL',valor:39200000,origen:'SAP'}, {periodo:'2026-10',up:'LODOS',cuenta:'TON TRATADAS',escenario:'REAL',valor:12500,origen:'Excel'}]),'plantilla_integracion_ecomaule.csv');$('clearDemo').onclick=()=>{rows=rows.filter(r=>r.origen!=='DEMO');persist();render()};$('restoreDemo').onclick=()=>{if(confirm('¿Reemplazar los registros actuales por datos FICTICIOS? Puedes exportar un respaldo antes.')){rows=seed();persist();render()}};$('wipeBtn').onclick=()=>{if(confirm('¿Eliminar TODOS los registros guardados en este navegador? Esta acción no se puede deshacer.')){rows=[];persist();render()}};$('manualForm').onsubmit=e=>{e.preventDefault();let x=Object.fromEntries(new FormData(e.target).entries()),r=normalizedRow(x,'MANUAL');if(!r){alert('Revisa los campos y el valor.');return}if(isDemo){rows=rows.filter(r=>r.origen!=='DEMO')}merge([r]);alert('Registro guardado.');};$('newKpiBtn').onclick=()=>$('kpiDialog').showModal();$('cancelKpi').onclick=()=>$('kpiDialog').close();$('customKpiForm').onsubmit=e=>{e.preventDefault();let v=Object.fromEntries(new FormData(e.target).entries());custom.push(v);persist();renderCatalog();$('kpiDialog').close();e.target.reset()};$('kpiCatalog').addEventListener('click',e=>{let btn=e.target.closest('[data-remove]');if(btn){custom.splice(Number(btn.dataset.remove),1);persist();renderCatalog()}});render();actualizarExcel(true)}
+init();
+</script>
+</body>
+</html>
