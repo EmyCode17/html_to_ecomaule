@@ -1,504 +1,164 @@
-
+"""ECOMAULE: panel web y recepción de PanelWebDAN desde Power Automate.
+Sin dependencias externas. BIOGAS_SYNC_KEY debe configurarse en Render.
+El Excel de SharePoint sigue siendo la fuente maestra. Cada POST reemplaza
+la fotografía completa; tras perder el disco temporal debe reenviarse la tabla.
 """
-ECOMAULE Analytics - Servidor web
-
-Compatible con:
-- Render (hosting)
-- Ejecución local
-- HTML de ECOMAULE Analytics
-- Excel maestro con hojas REAL y PPTO
-
-No requiere bibliotecas externas.
-"""
-
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal, InvalidOperation
+from collections import defaultdict
+import hmac
 import json
 import os
-import posixpath
-import re
-import zipfile
-from xml.etree import ElementTree as ET
-
-
-# ==========================================================
-# CONFIGURACIÓN
-# ==========================================================
+import tempfile
+import threading
+from urllib.parse import urlsplit
 
 RAIZ = Path(__file__).resolve().parent
-
-ARCHIVO = RAIZ / "ECOMAULE_PRUEBA_VINCULADA.xlsx"
-
-HTML = "ECOMAULE_Analytics_VINCULADO.html"
-
-PUERTO = int(os.environ.get("PORT", 10000))
-
-N = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
-R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
-P = "{http://schemas.openxmlformats.org/package/2006/relationships}"
-
-UPS = (
-    "LODOS",
-    "COMPOST",
-    "RELLENO",
-    "BIOGAS",
-    "VAL ENV",
-    "RCD"
-)
-
-ESCENARIOS = ("REAL", "PPTO")
-
-CUENTAS = {
-    "INGRESOS",
-    "COGS",
-    "GAV",
-    "COMBUSTIBLE",
-    "ARRIENDO MAQUINARIA",
-    "VIRUTA",
-    "TON TRATADAS",
-    "LITROS COMBUSTIBLE",
-    "HORAS MAQUINA",
-    "VOLUMEN VIRUTA",
-    "ACOPIO FINAL",
-    "TRATAMIENTO ACOPIO",
-    "ACOPIO SMA",
-    "HORAS EXCAVADORA",
-    "VUELTAS TOLVA",
-    "GENERACION BIOGAS",
-    "TON BIODIGESTION",
-    "RILES TRATADOS",
-    "LODOS BIODIGESTION",
-}
+HTML = RAIZ / 'ECOMAULE_Analytics_VINCULADO.html'
+DATOS = Path(os.environ.get('BIOGAS_DATA_FILE', str(Path(tempfile.gettempdir()) / 'ecomaule-biogas.json')))
+LOCK = threading.Lock()
+MAX_BODY = 5 * 1024 * 1024
 
 
-# ==========================================================
-# LECTURA DE CELDAS EXCEL
-# ==========================================================
-
-def texto_celda(celda, compartidas):
-    tipo = celda.attrib.get("t", "")
-
-    inline = celda.find(N + "is")
-
-    if inline is not None:
-        return "".join(
-            n.text or ""
-            for n in inline.iter(N + "t")
-        )
-
-    v = celda.find(N + "v")
-
-    if v is None or v.text is None:
-        return None
-
-    if tipo == "s":
-        return compartidas[int(v.text)]
-
-    if tipo in ("str", "inlineStr", "e"):
-        return v.text
-
-    if tipo == "b":
-        return v.text == "1"
-
+def fecha(valor):
+    texto = str(valor).strip()
     try:
-        numero = float(v.text)
-        return int(numero) if numero.is_integer() else numero
-    except ValueError:
-        return v.text
+        serial = Decimal(texto)
+        if not serial.is_finite() or serial < 1 or serial > 80000:
+            raise ValueError('Fecha serial fuera de rango')
+        return (datetime(1899, 12, 30) + timedelta(days=float(serial))).date()
+    except InvalidOperation:
+        pass
+    for formato in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y'):
+        try:
+            return datetime.strptime(texto[:10], formato).date()
+        except ValueError:
+            pass
+    raise ValueError('Fecha no válida')
 
 
-# ==========================================================
-# LECTURA DEL LIBRO EXCEL
-# ==========================================================
-
-def leer_libro(archivo):
-    """
-    Lee las hojas REAL y PPTO sin bibliotecas externas.
-    """
-
-    with zipfile.ZipFile(archivo) as z:
-
-        compartidas = []
-
-        if "xl/sharedStrings.xml" in z.namelist():
-            raiz = ET.fromstring(
-                z.read("xl/sharedStrings.xml")
-            )
-
-            compartidas = [
-                "".join(
-                    n.text or ""
-                    for n in si.iter(N + "t")
-                )
-                for si in raiz.findall(N + "si")
-            ]
-
-        libro = ET.fromstring(
-            z.read("xl/workbook.xml")
-        )
-
-        rels = ET.fromstring(
-            z.read("xl/_rels/workbook.xml.rels")
-        )
-
-        destinos = {
-            x.get("Id"): x.get("Target")
-            for x in rels.findall(P + "Relationship")
-        }
-
-        resultados = {}
-
-        for hoja in libro.findall(
-            N + "sheets/" + N + "sheet"
-        ):
-
-            nombre = hoja.get("name")
-
-            if nombre not in ESCENARIOS:
-                continue
-
-            target = destinos[
-                hoja.get(R + "id")
-            ]
-
-            if target.startswith("/"):
-                entry = target.lstrip("/")
-            else:
-                entry = posixpath.normpath(
-                    "xl/" + target
-                )
-
-            xml = ET.fromstring(
-                z.read(entry)
-            )
-
-            tabla = []
-
-            for row in xml.findall(
-                N + "sheetData/" + N + "row"
-            ):
-
-                columnas = {}
-
-                for cell in row.findall(N + "c"):
-
-                    referencia = cell.attrib.get(
-                        "r", ""
-                    )
-
-                    letras = re.match(
-                        r"[A-Z]+",
-                        referencia
-                    )
-
-                    if not letras:
-                        continue
-
-                    indice = 0
-
-                    for letra in letras.group():
-                        indice = (
-                            indice * 26
-                            + ord(letra)
-                            - 64
-                        )
-
-                    columnas[indice - 1] = texto_celda(
-                        cell,
-                        compartidas
-                    )
-
-                if columnas:
-                    tabla.append([
-                        columnas.get(i)
-                        for i in range(
-                            max(columnas) + 1
-                        )
-                    ])
-
-            resultados[nombre] = tabla
-
-        return resultados
-
-
-# ==========================================================
-# VALIDACIÓN Y CONSOLIDACIÓN
-# ==========================================================
-
-def convertir(archivo):
-
-    hojas = leer_libro(archivo)
-
-    if (
-        "REAL" not in hojas
-        or "PPTO" not in hojas
-    ):
-        raise ValueError(
-            "El Excel debe contener las hojas REAL y PPTO."
-        )
-
-    registros = []
-    avisos = []
-    unicos = set()
-
-    for escenario, tabla in hojas.items():
-
-        if not tabla:
+def convertir(payload):
+    tabla = payload if isinstance(payload, list) else payload.get('value') if isinstance(payload, dict) else None
+    if not isinstance(tabla, list) or not tabla or len(tabla) > 20000:
+        raise ValueError('Se espera la lista completa de filas de PanelWebDAN (1 a 20000 filas)')
+    meses = defaultdict(Decimal)
+    dias = set()
+    omitidas = 0
+    for numero, fila in enumerate(tabla, 2):
+        if not isinstance(fila, dict):
+            raise ValueError(f'Fila {numero}: debe ser un objeto')
+        raw = fila.get('Biogas Generado M3')
+        if raw is None or str(raw).strip() == '':
+            omitidas += 1
             continue
-
-        encabezados = {
-            str(valor).strip().upper(): indice
-            for indice, valor in enumerate(tabla[0])
-            if valor is not None
-        }
-
-        if (
-            "PERIODO" not in encabezados
-            or "INDICADOR" not in encabezados
-        ):
-            raise ValueError(
-                f"Faltan encabezados PERIODO "
-                f"e INDICADOR en {escenario}."
-            )
-
-        def obtener(fila, nombre):
-            indice = encabezados.get(nombre)
-
-            if (
-                indice is not None
-                and indice < len(fila)
-            ):
-                return fila[indice]
-
-            return None
-
-        for numero_fila, fila in enumerate(
-            tabla[1:], 2
-        ):
-
-            periodo = str(
-                obtener(fila, "PERIODO") or ""
-            ).strip()
-
-            indicador = str(
-                obtener(fila, "INDICADOR") or ""
-            ).strip().upper()
-
-            if not periodo and not indicador:
-                continue
-
-            if not re.fullmatch(
-                r"20\d{2}-(0[1-9]|1[0-2])",
-                periodo
-            ):
-                avisos.append(
-                    f"{escenario} fila {numero_fila}: "
-                    "período no válido"
-                )
-                continue
-
-            if indicador not in CUENTAS:
-                avisos.append(
-                    f"{escenario} fila {numero_fila}: "
-                    f"indicador no reconocido: {indicador}"
-                )
-                continue
-
-            for up in UPS:
-
-                valor_original = obtener(
-                    fila, up
-                )
-
-                if (
-                    valor_original is None
-                    or str(valor_original).strip() == ""
-                ):
-                    continue
-
-                try:
-                    valor = float(valor_original)
-                except (ValueError, TypeError):
-                    avisos.append(
-                        f"{escenario} fila {numero_fila} "
-                        f"{up}: valor no numérico"
-                    )
-                    continue
-
-                clave = (
-                    periodo,
-                    up,
-                    indicador,
-                    escenario
-                )
-
-                if clave in unicos:
-                    avisos.append(
-                        f"{escenario} fila {numero_fila}: "
-                        f"dato duplicado {clave}"
-                    )
-                    continue
-
-                unicos.add(clave)
-
-                registros.append({
-                    "periodo": periodo,
-                    "up": up,
-                    "cuenta": indicador,
-                    "escenario": escenario,
-                    "valor": valor,
-                    "origen": "EXCEL_VINCULADO"
-                })
-
-    if not registros:
-        raise ValueError(
-            "No se encontraron registros válidos "
-            "en REAL y PPTO."
-        )
-
+        try:
+            dia = fecha(fila.get('Fecha', ''))
+            texto = str(raw).strip().replace(' ', '')
+            if ',' in texto:
+                texto = texto.replace('.', '').replace(',', '.')
+            cantidad = Decimal(texto)
+            if not cantidad.is_finite() or cantidad < 0 or cantidad > Decimal('1e12'):
+                raise ValueError('Biogás debe ser un número finito entre 0 y 1e12')
+            if dia in dias:
+                raise ValueError(f'Fecha duplicada: {dia.isoformat()}')
+        except (ValueError, InvalidOperation, OverflowError) as exc:
+            raise ValueError(f'Fila {numero}: {exc}') from exc
+        dias.add(dia)
+        meses[dia.strftime('%Y-%m')] += cantidad
+    if not dias:
+        raise ValueError('No hay filas con fecha y biogás válidos; se conserva la carga anterior')
+    ahora = datetime.now(timezone.utc).isoformat(timespec='seconds')
     return {
-        "registros": registros,
-        "archivo": archivo.name,
-        "actualizado_archivo": datetime.fromtimestamp(
-            archivo.stat().st_mtime
-        ).strftime("%d-%m-%Y %H:%M:%S"),
-        "sincronizado": datetime.now().strftime(
-            "%d-%m-%Y %H:%M:%S"
-        ),
-        "advertencias": avisos[:25],
-        "total": len(registros)
+        'registros': [{'periodo': mes, 'up': 'BIOGAS', 'cuenta': 'GENERACION BIOGAS',
+                       'escenario': 'REAL', 'valor': float(total), 'origen': 'SHAREPOINT_POWER_AUTOMATE'}
+                      for mes, total in sorted(meses.items())],
+        'archivo': 'Control de Operación DAN Ecomaule.xlsx · PanelWebDAN',
+        'sincronizado': ahora, 'actualizado_archivo': 'No informado por Excel',
+        'total': len(meses), 'filas_diarias': len(dias),
+        'advertencias': [f'{omitidas} filas sin biogás omitidas'] if omitidas else [],
+        'ultima_fecha': max(dias).isoformat(),
     }
 
 
-# ==========================================================
-# SERVIDOR WEB
-# ==========================================================
+def guardar(datos):
+    DATOS.parent.mkdir(parents=True, exist_ok=True)
+    with LOCK:
+        fd, nombre = tempfile.mkstemp(dir=DATOS.parent, prefix='biogas-', suffix='.tmp')
+        try:
+            with os.fdopen(fd, 'w', encoding='utf-8') as archivo:
+                json.dump(datos, archivo, ensure_ascii=False, allow_nan=False)
+                archivo.flush()
+                os.fsync(archivo.fileno())
+            os.replace(nombre, DATOS)
+        finally:
+            if os.path.exists(nombre):
+                os.unlink(nombre)
 
-class Handler(SimpleHTTPRequestHandler):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            directory=str(RAIZ),
-            **kwargs
-        )
+class Handler(BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.0'
 
-    def end_headers(self):
-        self.send_header(
-            "Cache-Control",
-            "no-store, no-cache, "
-            "must-revalidate, max-age=0"
-        )
-        self.send_header(
-            "X-Content-Type-Options",
-            "nosniff"
-        )
-        super().end_headers()
-
-    def list_directory(self, path):
-        self.send_error(
-            403,
-            "No está permitido listar la carpeta"
-        )
-        return None
+    def enviar(self, contenido, estado=200, tipo='application/json; charset=utf-8'):
+        blob = contenido if isinstance(contenido, bytes) else json.dumps(contenido, ensure_ascii=False, allow_nan=False).encode('utf-8')
+        self.send_response(estado)
+        self.send_header('Content-Type', tipo)
+        self.send_header('Content-Length', str(len(blob)))
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.end_headers()
+        self.wfile.write(blob)
 
     def do_GET(self):
-
-        ruta = self.path.split("?", 1)[0]
-
-        # Página principal
-        if ruta == "/":
-            self.path = "/" + HTML
-            return super().do_GET()
-
-        # Comprobación de servidor
-        if ruta == "/health":
-            return self.enviar_json({
-                "status": "ok",
-                "servicio": "ECOMAULE Analytics"
-            })
-
-        # API de datos
-        if ruta == "/api/maestro":
-
-            if not ARCHIVO.exists():
-                return self.enviar_json({
-                    "error": (
-                        "Fuente de datos no configurada. "
-                        "El servidor todavía no está "
-                        "conectado a SharePoint."
-                    )
-                }, 503)
-
+        ruta = urlsplit(self.path).path
+        if ruta == '/health':
+            return self.enviar({'status': 'ok', 'receptor_configurado': bool(os.environ.get('BIOGAS_SYNC_KEY')), 'datos_disponibles': DATOS.is_file()})
+        if ruta == '/api/maestro':
             try:
-                datos = convertir(ARCHIVO)
-                return self.enviar_json(datos)
+                with LOCK:
+                    datos = json.loads(DATOS.read_text(encoding='utf-8'))
+                return self.enviar(datos)
+            except FileNotFoundError:
+                return self.enviar({'error': 'Esperando el primer envío de Power Automate', 'registros': []}, 503)
+            except (OSError, ValueError):
+                return self.enviar({'error': 'No se pudo leer la última carga; vuelve a ejecutar el flujo'}, 503)
+        if ruta in ('/', '/' + HTML.name):
+            try:
+                return self.enviar(HTML.read_bytes(), tipo='text/html; charset=utf-8')
+            except OSError:
+                return self.enviar({'error': 'Falta el archivo HTML del panel'}, 503)
+        return self.enviar({'error': 'Ruta no disponible'}, 404)
 
-            except Exception as exc:
-                return self.enviar_json({
-                    "error": str(exc)
-                }, 500)
-
-        # Evitar descargar archivos internos
-        if (
-            ruta.endswith(".py")
-            or ruta.endswith(".xlsx")
-            or ruta.endswith(".xls")
-            or ruta.startswith("/.")
-        ):
-            self.send_error(403)
-            return
-
-        return super().do_GET()
-
-    def enviar_json(self, datos, estado=200):
-
-        contenido = json.dumps(
-            datos,
-            ensure_ascii=False
-        ).encode("utf-8")
-
-        self.send_response(estado)
-
-        self.send_header(
-            "Content-Type",
-            "application/json; charset=utf-8"
-        )
-
-        self.send_header(
-            "Content-Length",
-            str(len(contenido))
-        )
-
-        self.end_headers()
-        self.wfile.write(contenido)
+    def do_POST(self):
+        if urlsplit(self.path).path != '/api/biogas':
+            return self.enviar({'error': 'Ruta no disponible'}, 404)
+        clave = os.environ.get('BIOGAS_SYNC_KEY', '')
+        if len(clave) < 32:
+            return self.enviar({'error': 'Configura BIOGAS_SYNC_KEY con al menos 32 caracteres en Render'}, 503)
+        recibido = self.headers.get('X-ECOMAULE-Key', '')
+        if not hmac.compare_digest(recibido.encode('utf-8'), clave.encode('utf-8')):
+            return self.enviar({'error': 'Clave de envío incorrecta'}, 401)
+        if self.headers.get('Content-Type', '').split(';')[0].strip().lower() != 'application/json':
+            return self.enviar({'error': 'Se requiere Content-Type: application/json'}, 415)
+        try:
+            tamano = int(self.headers.get('Content-Length', '0'))
+            if not 0 < tamano <= MAX_BODY:
+                return self.enviar({'error': 'Tamaño del envío no permitido'}, 413)
+            self.connection.settimeout(30)
+            payload = json.loads(self.rfile.read(tamano))
+            datos = convertir(payload)
+        except (ValueError, UnicodeError, TimeoutError, OSError) as exc:
+            return self.enviar({'error': str(exc)}, 400)
+        try:
+            guardar(datos)
+        except OSError:
+            return self.enviar({'error': 'No se pudo guardar la carga; se debe reintentar'}, 500)
+        return self.enviar({'ok': True, 'meses': datos['total'], 'filas_diarias': datos['filas_diarias'], 'sincronizado': datos['sincronizado']})
 
 
-# ==========================================================
-# INICIO DEL SERVIDOR
-# ==========================================================
-
-if __name__ == "__main__":
-
-    print("=" * 60)
-    print("ECOMAULE ANALYTICS")
-    print("Servidor web Python")
-    print(f"Puerto: {PUERTO}")
-    print(f"Panel: {HTML}")
-    print("=" * 60)
-
-    servidor = ThreadingHTTPServer(
-        ("0.0.0.0", PUERTO),
-        Handler
-    )
-
-    try:
+if __name__ == '__main__':
+    puerto = int(os.environ.get('PORT', '10000'))
+    print(f'ECOMAULE listo en puerto {puerto}', flush=True)
+    with ThreadingHTTPServer(('0.0.0.0', puerto), Handler) as servidor:
         servidor.serve_forever()
-
-    except KeyboardInterrupt:
-        print("Servidor detenido.")
-
-    finally:
-        servidor.server_close()
-
