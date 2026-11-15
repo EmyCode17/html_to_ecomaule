@@ -39,6 +39,14 @@ def fecha(valor):
     raise ValueError('Fecha no válida')
 
 
+CAMPOS = {
+    'Biogas Generado M3': 'GENERACION BIOGAS',
+    'Toneladas tratadas': 'TON BIODIGESTION',
+    'RILES tratados': 'RILES TRATADOS',
+    'Lodos tratados': 'LODOS BIODIGESTION',
+}
+
+
 def convertir(payload):
     tabla = payload if isinstance(payload, list) else payload.get('value') if isinstance(payload, dict) else None
     if not isinstance(tabla, list) or not tabla or len(tabla) > 20000:
@@ -46,39 +54,48 @@ def convertir(payload):
     meses = defaultdict(Decimal)
     dias = set()
     omitidas = 0
+    presentes = set()
     for numero, fila in enumerate(tabla, 2):
         if not isinstance(fila, dict):
             raise ValueError(f'Fila {numero}: debe ser un objeto')
-        raw = fila.get('Biogas Generado M3')
-        if raw is None or str(raw).strip() == '':
+        valores = {nombre: fila.get(nombre) for nombre in CAMPOS
+                   if fila.get(nombre) is not None and str(fila.get(nombre)).strip() != ''}
+        if not valores:
             omitidas += 1
             continue
         try:
             dia = fecha(fila.get('Fecha', ''))
-            texto = str(raw).strip().replace(' ', '')
-            if ',' in texto:
-                texto = texto.replace('.', '').replace(',', '.')
-            cantidad = Decimal(texto)
-            if not cantidad.is_finite() or cantidad < 0 or cantidad > Decimal('1e12'):
-                raise ValueError('Biogás debe ser un número finito entre 0 y 1e12')
             if dia in dias:
                 raise ValueError(f'Fecha duplicada: {dia.isoformat()}')
+            for nombre, raw in valores.items():
+                texto = str(raw).strip().replace(' ', '').replace('\u00a0', '')
+                if ',' in texto:
+                    texto = texto.replace('.', '').replace(',', '.')
+                try:
+                    cantidad = Decimal(texto)
+                except InvalidOperation as exc:
+                    raise ValueError(f'{nombre}: valor no numérico') from exc
+                if not cantidad.is_finite() or cantidad < 0 or cantidad > Decimal('1e12'):
+                    raise ValueError(f'{nombre}: debe ser un número finito entre 0 y 1e12')
+                meses[(dia.strftime('%Y-%m'), CAMPOS[nombre])] += cantidad
+                presentes.add(nombre)
         except (ValueError, InvalidOperation, OverflowError) as exc:
             raise ValueError(f'Fila {numero}: {exc}') from exc
         dias.add(dia)
-        meses[dia.strftime('%Y-%m')] += cantidad
     if not dias:
-        raise ValueError('No hay filas con fecha y biogás válidos; se conserva la carga anterior')
+        raise ValueError('No hay filas con fecha e indicadores válidos; se conserva la carga anterior')
     ahora = datetime.now(timezone.utc).isoformat(timespec='seconds')
+    avisos = [f'{omitidas} filas sin indicadores omitidas'] if omitidas else []
+    avisos += [f'Sin valores recibidos: {nombre}' for nombre in CAMPOS if nombre not in presentes]
     return {
-        'registros': [{'periodo': mes, 'up': 'BIOGAS', 'cuenta': 'GENERACION BIOGAS',
+        'registros': [{'periodo': mes, 'up': 'BIOGAS', 'cuenta': cuenta,
                        'escenario': 'REAL', 'valor': float(total), 'origen': 'SHAREPOINT_POWER_AUTOMATE'}
-                      for mes, total in sorted(meses.items())],
+                      for (mes, cuenta), total in sorted(meses.items())],
         'archivo': 'Control de Operación DAN Ecomaule.xlsx · PanelWebDAN',
         'sincronizado': ahora, 'actualizado_archivo': 'No informado por Excel',
-        'total': len(meses), 'filas_diarias': len(dias),
-        'advertencias': [f'{omitidas} filas sin biogás omitidas'] if omitidas else [],
-        'ultima_fecha': max(dias).isoformat(),
+        'total': len(meses), 'meses': len({mes for mes, cuenta in meses}),
+        'indicadores_recibidos': sorted(presentes), 'filas_diarias': len(dias),
+        'advertencias': avisos, 'ultima_fecha': max(dias).isoformat(),
     }
 
 
@@ -154,11 +171,13 @@ class Handler(BaseHTTPRequestHandler):
             guardar(datos)
         except OSError:
             return self.enviar({'error': 'No se pudo guardar la carga; se debe reintentar'}, 500)
-        return self.enviar({'ok': True, 'meses': datos['total'], 'filas_diarias': datos['filas_diarias'], 'sincronizado': datos['sincronizado']})
+        return self.enviar({'ok': True, 'meses': datos['meses'], 'registros': datos['total'], 'indicadores': datos['indicadores_recibidos'], 'filas_diarias': datos['filas_diarias'], 'sincronizado': datos['sincronizado']})
 
 
 if __name__ == '__main__':
     puerto = int(os.environ.get('PORT', '10000'))
     print(f'ECOMAULE listo en puerto {puerto}', flush=True)
     with ThreadingHTTPServer(('0.0.0.0', puerto), Handler) as servidor:
+        servidor.serve_forever()
+
         servidor.serve_forever()
