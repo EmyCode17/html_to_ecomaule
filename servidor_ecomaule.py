@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
+from zoneinfo import ZoneInfo
 from collections import defaultdict
 import hmac
 import json
@@ -47,11 +48,21 @@ CAMPOS = {
 }
 
 
-def convertir(payload):
+def hoy_chile():
+    try:
+        return datetime.now(ZoneInfo("America/Santiago")).date()
+    except Exception as exc:
+        raise ValueError("No se pudo obtener la zona America/Santiago; instala tzdata") from exc
+
+
+def convertir(payload, corte=None):
     tabla = payload if isinstance(payload, list) else payload.get('value') if isinstance(payload, dict) else None
     if not isinstance(tabla, list) or not tabla or len(tabla) > 20000:
         raise ValueError('Se espera la lista completa de filas de PanelWebDAN (1 a 20000 filas)')
+    corte = corte or hoy_chile()
     meses = defaultdict(Decimal)
+    biogas_dias = defaultdict(set)
+    futuras = 0
     dias = set()
     omitidas = 0
     presentes = set()
@@ -65,6 +76,9 @@ def convertir(payload):
             continue
         try:
             dia = fecha(fila.get('Fecha', ''))
+            if dia > corte:
+                futuras += 1
+                continue
             if dia in dias:
                 raise ValueError(f'Fecha duplicada: {dia.isoformat()}')
             for nombre, raw in valores.items():
@@ -79,6 +93,8 @@ def convertir(payload):
                     raise ValueError(f'{nombre}: debe ser un número finito entre 0 y 1e12')
                 meses[(dia.strftime('%Y-%m'), CAMPOS[nombre])] += cantidad
                 presentes.add(nombre)
+                if nombre == 'Biogas Generado M3':
+                    biogas_dias[dia.strftime('%Y-%m')].add(dia)
         except (ValueError, InvalidOperation, OverflowError) as exc:
             raise ValueError(f'Fila {numero}: {exc}') from exc
         dias.add(dia)
@@ -87,7 +103,29 @@ def convertir(payload):
     ahora = datetime.now(timezone.utc).isoformat(timespec='seconds')
     avisos = [f'{omitidas} filas sin indicadores omitidas'] if omitidas else []
     avisos += [f'Sin valores recibidos: {nombre}' for nombre in CAMPOS if nombre not in presentes]
+    resumen_promedio = {}
+    for mes, fechas in sorted(biogas_dias.items()):
+        fin = max(fechas)
+        dias_periodo = fin.day
+        faltantes = [f'{mes}-{d:02d}' for d in range(1, dias_periodo + 1)
+                     if datetime(fin.year, fin.month, d).date() not in fechas]
+        total = meses[(mes, 'GENERACION BIOGAS')]
+        promedio = float(total / Decimal(dias_periodo)) if not faltantes else None
+        resumen_promedio[mes] = {
+            'corte': fin.isoformat(), 'dias': dias_periodo,
+            'dias_con_datos': len(fechas), 'faltantes': faltantes,
+            'total_m3': float(total), 'promedio_m3_dia': promedio,
+        }
+        if promedio is not None:
+            meses[(mes, 'BIOGAS PROMEDIO DIARIO')] = Decimal(str(promedio))
+        else:
+            avisos.append(f'{mes}: promedio no disponible; faltan {len(faltantes)} días de biogás')
+    if futuras:
+        avisos.append(f'{futuras} filas futuras excluidas; corte máximo {corte.isoformat()}')
     return {
+        'biogas_promedio_mensual': resumen_promedio,
+        'fecha_corte_maxima': corte.isoformat(),
+        '_filas_fuente': tabla,
         'registros': [{'periodo': mes, 'up': 'BIOGAS', 'cuenta': cuenta,
                        'escenario': 'REAL', 'valor': float(total), 'origen': 'SHAREPOINT_POWER_AUTOMATE'}
                       for (mes, cuenta), total in sorted(meses.items())],
@@ -135,6 +173,11 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 with LOCK:
                     datos = json.loads(DATOS.read_text(encoding='utf-8'))
+                if '_filas_fuente' in datos:
+                    sincronizado = datos['sincronizado']
+                    datos = convertir(datos['_filas_fuente'])
+                    datos['sincronizado'] = sincronizado
+                datos.pop('_filas_fuente', None)
                 return self.enviar(datos)
             except FileNotFoundError:
                 return self.enviar({'error': 'Esperando el primer envío de Power Automate', 'registros': []}, 503)
@@ -178,6 +221,4 @@ if __name__ == '__main__':
     puerto = int(os.environ.get('PORT', '10000'))
     print(f'ECOMAULE listo en puerto {puerto}', flush=True)
     with ThreadingHTTPServer(('0.0.0.0', puerto), Handler) as servidor:
-        servidor.serve_forever()
-
         servidor.serve_forever()
