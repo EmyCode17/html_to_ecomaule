@@ -209,13 +209,27 @@ function exportCosts(){
 }
 function renderOperations(){let a=k=>amount(k,'REAL'),b=k=>amount(k,'PPTO');let specs=[['Toneladas tratadas','TON TRATADAS','t'],['Combustible','COMBUSTIBLE','MM CLP'],['Litros combustible','LITROS COMBUSTIBLE','L'],['Horas máquina','HORAS MAQUINA','h'],['Arriendo maquinaria','ARRIENDO MAQUINARIA','MM CLP'],['Viruta','VIRUTA','MM CLP'],['Volumen viruta','VOLUMEN VIRUTA','m³'],['Tratamiento de acopio','TRATAMIENTO ACOPIO','t']];$('operationalKpis').innerHTML=specs.map(([name,k,unit])=>`<div class="stat"><label>${safe(name)}</label><b>${a(k)===null?'—':unit==='MM CLP'?abbreviated(a(k),2):fmt(a(k),0)}</b><small>${unit} · PPTO: ${b(k)===null?'—':unit==='MM CLP'?abbreviated(b(k),2):fmt(b(k),0)}</small></div>`).join('');let calcs=[['Costo operacional unitario','COGS','TON TRATADAS','CLP/t','COGS / toneladas tratadas'],['Costo por litro combustible','COMBUSTIBLE','LITROS COMBUSTIBLE','CLP/L','Combustible / litros'],['Costo por hora máquina','ARRIENDO MAQUINARIA','HORAS MAQUINA','CLP/h','Arriendo maquinaria / horas'],['Consumo unitario de viruta','VOLUMEN VIRUTA','TON TRATADAS','m³/t','Volumen viruta / toneladas'],['Costo unitario de viruta','VIRUTA','TON TRATADAS','CLP/t','Viruta / toneladas']];$('operationalTable').innerHTML=calcs.map(([name,n,d,unit,formula])=>{let v=ratio(a(n),a(d)),pb=ratio(b(n),b(d));return `<tr><td><b>${safe(name)}</b></td><td class="num">${v===null?'—':fmt(v,unit==='m³/t'?4:1)} ${unit}</td><td class="num">${pb===null?'—':fmt(pb,unit==='m³/t'?4:1)} ${unit}</td><td>${safe(formula)}</td></tr>`}).join('')}
 
-const BIO_METRICS=[['GENERACION BIOGAS','Generación de biogás','m³'],['TON BIODIGESTION','Toneladas tratadas','t'],['RILES TRATADOS','RILES tratados','m³'],['LODOS BIODIGESTION','Lodos tratados','t']];
-function bioSumYtd(account,scenario){const yr=Number(period().slice(0,4)),max=Number(period().slice(5,7));let vals=[];for(let m=1;m<=max;m++){let v=amount(account,scenario,`${yr}-${String(m).padStart(2,'0')}`,'BIOGAS');if(v!==null)vals.push(v)}return vals.length?vals.reduce((a,b)=>a+b,0):null}
+let biogasPromedios = {};
+const BIO_METRICS=[['GENERACION BIOGAS','Generación de biogás','m³'],['TON BIODIGESTION','Toneladas tratadas','t'],['RILES TRATADOS','RILES tratados','m³'],['LODOS BIODIGESTION','Lodos tratados','t'],['BIOGAS PROMEDIO DIARIO','Biogás promedio diario del mes','m³/día']];
+function bioSumYtd(account,scenario){
+ if(account==='BIOGAS PROMEDIO DIARIO'){
+  if(scenario!=='REAL')return null;
+  const items=Object.entries(biogasPromedios).filter(([p])=>p.slice(0,4)===period().slice(0,4)&&p<=period()).map(([,v])=>v);
+  if(!items.length||items.some(v=>v.promedio_m3_dia===null))return null;
+  return items.reduce((s,v)=>s+v.total_m3,0)/items.reduce((s,v)=>s+v.dias,0);
+ }
+const yr=Number(period().slice(0,4)),max=Number(period().slice(5,7));let vals=[];for(let m=1;m<=max;m++){let v=amount(account,scenario,`${yr}-${String(m).padStart(2,'0')}`,'BIOGAS');if(v!==null)vals.push(v)}return vals.length?vals.reduce((a,b)=>a+b,0):null}
 function renderBiogas(){
  const defined=new Set(BIO_METRICS.map(x=>x[0]));
  const extras=catalogMeta.filter(m=>m.tipo==='DIRECTO'&&m.modulo==='BIODIGESTION'&&m.activo!=='NO'&&!defined.has(m.codigo)).map(m=>[m.codigo,m.nombre,m.unidad]);
  const metrics=[...BIO_METRICS,...extras],rowHtml=[];
- $('bioKpis').innerHTML=metrics.map(([code,label,unit])=>{const real=amount(code,'REAL',period(),'BIOGAS'),base=amount(code,'PPTO',period(),'BIOGAS');return `<div class="stat"><label>${safe(label)}</label><b>${real===null?'—':fmt(real,unit==='t'?1:0)}</b><small>${safe(unit)} · PPTO: ${base===null?'—':fmt(base,unit==='t'?1:0)}</small></div>`}).join('');
+ $('bioKpis').innerHTML=metrics.map(([code,label,unit])=>{const real=amount(code,'REAL',period(),'BIOGAS'),base=amount(code,'PPTO',period(),'BIOGAS');
+ if(code==='BIOGAS PROMEDIO DIARIO'){
+  const dato=biogasPromedios[period()];
+  const nota=dato ? 'Corte: '+dato.corte.split('-').reverse().join('/')+' · '+dato.dias+' días calendario · '+(dato.faltantes.length?'Faltan '+dato.faltantes.length+' días; no se calcula el promedio.':'Incluye días con producción cero.') : 'Sin datos diarios para este mes. Si acabas de actualizar el servidor, ejecuta el flujo.';
+  return '<div class="stat"><label>'+safe(label)+'</label><b>'+(real===null?'—':fmt(real,2))+'</b><small>m³/día · '+safe(nota)+'</small></div>';
+ }
+ return `<div class="stat"><label>${safe(label)}</label><b>${real===null?'—':fmt(real,unit==='m³/día'?2:unit==='t'?1:0)}</b><small>${safe(unit)} · PPTO: ${base===null?'—':fmt(base,unit==='t'?1:0)}</small></div>`}).join('');
  $('bioYtd').innerHTML=metrics.map(([code,label,unit])=>{const real=bioSumYtd(code,'REAL'),base=bioSumYtd(code,'PPTO');return `<div class="stat"><label>${safe(label)} · YTD</label><b>${real===null?'—':fmt(real,unit==='t'?1:0)}</b><small>${safe(unit)} · PPTO YTD: ${base===null?'—':fmt(base,unit==='t'?1:0)}</small></div>`}).join('');
  $('bioTable').innerHTML=metrics.map(([code,label,unit])=>{let vals=['REAL','PPTO'].map(s=>amount(code,s,period(),'BIOGAS'));let delta=vals[0]===null||vals[1]===null?null:vals[0]-vals[1];return `<tr><td><b>${safe(label)}</b></td><td>${safe(unit)}</td>${vals.map(v=>`<td class="num">${v===null?'—':fmt(v,1)}</td>`).join('')}<td class="num">${delta===null?'—':`${delta>0?'+':''}${fmt(delta,1)}`}</td></tr>`}).join('');
  const selected=$('bioChartMetric').value,unit=BIO_METRICS.find(m=>m[0]===selected)?.[2]||'',year=Number(period().slice(0,4)),series=sc=>Array.from({length:12},(_,i)=>amount(selected,sc,`${year}-${String(i+1).padStart(2,'0')}`,'BIOGAS'));
@@ -318,8 +332,7 @@ async function importFile(){
  }catch(e){$('importStatus').textContent=`Error: ${e.message}`;console.error(e)}
 }
 
-// Vinculación de prueba. El servidor local lee SIEMPRE el Excel guardado en disco.
-// No requiere editar el código al cambiar los valores de las celdas.
+// El servidor recibe la tabla completa de Power Automate y aplica el corte según la fecha de Chile.
 let consultaEnCurso=false, primerDato=true;
 async function actualizarExcel(silencioso=false){
  if(consultaEnCurso)return;
@@ -331,6 +344,7 @@ async function actualizarExcel(silencioso=false){
   const dato=await respuesta.json();
   if(!respuesta.ok)throw new Error(dato.error||'No se pudo consultar el servidor');
   if(!Array.isArray(dato.registros)||!dato.registros.length)throw new Error('Sin registros recibidos');
+  biogasPromedios=dato.biogas_promedio_mensual||{};
   rows=dato.registros;
   if(primerDato){$('up').value='BIOGAS';$('period').value=rows.map(r=>r.periodo).sort().at(-1);primerDato=false;}
   updated=new Date(dato.sincronizado).toLocaleString('es-CL');
@@ -340,13 +354,17 @@ async function actualizarExcel(silencioso=false){
   $('updated').textContent='Última recepción del servidor: '+updated;
   if(!silencioso)activate('biodigestion');
  }catch(error){
-  rows=[];render();
+  rows=[];biogasPromedios={};render();
   info.textContent=error.message+' · Sin datos disponibles; se volverá a consultar automáticamente.';
   $('updated').textContent='Conexión pendiente · no hay datos mostrados';
  }finally{consultaEnCurso=false;btn.disabled=false;}
 }
 
-function init(){load();ACCOUNTS.forEach(k=>{for(let id of ['manualAccount','kpiNumerator','kpiDenominator']){let opt=document.createElement('option');opt.value=k;opt.textContent=`${LABEL[k]} (${k})`;$(id).appendChild(opt)}});$('bioChartMetric').addEventListener('change',renderBiogas);$('up').addEventListener('change',render);$('period').addEventListener('change',()=>{document.querySelector('#manualForm [name=periodo]').value=period();render()});$('accountChart').addEventListener('change',renderCosts);$('costScope').addEventListener('change',renderCosts);$('costBaseline').addEventListener('change',renderCosts);$('costExportBtn').addEventListener('click',exportCosts);document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>activate(t.dataset.tab)));$('syncExcelBtn').onclick=()=>actualizarExcel(false);$('jumpUpload').onclick=()=>activate('datos');$('importBtn').onclick=importFile;$('exportBtn').onclick=()=>download(toCsv(rows),`ecomaule_respaldo_${period()}.csv`);$('templateBtn').onclick=()=>download(toCsv([{periodo:'2026-10',up:'LODOS',cuenta:'COGS',escenario:'PPTO',valor:37480000,origen:'Excel'}, {periodo:'2026-10',up:'LODOS',cuenta:'COGS',escenario:'REAL',valor:39200000,origen:'SAP'}, {periodo:'2026-10',up:'LODOS',cuenta:'TON TRATADAS',escenario:'REAL',valor:12500,origen:'Excel'}]),'plantilla_integracion_ecomaule.csv');$('clearDemo').onclick=()=>{rows=rows.filter(r=>r.origen!=='DEMO');persist();render()};$('restoreDemo').onclick=()=>{if(confirm('¿Reemplazar los registros actuales por datos FICTICIOS? Puedes exportar un respaldo antes.')){rows=seed();persist();render()}};$('wipeBtn').onclick=()=>{if(confirm('¿Eliminar TODOS los registros guardados en este navegador? Esta acción no se puede deshacer.')){rows=[];persist();render()}};$('manualForm').onsubmit=e=>{e.preventDefault();let x=Object.fromEntries(new FormData(e.target).entries()),r=normalizedRow(x,'MANUAL');if(!r){alert('Revisa los campos y el valor.');return}if(isDemo){rows=rows.filter(r=>r.origen!=='DEMO')}merge([r]);alert('Registro guardado.');};$('newKpiBtn').onclick=()=>$('kpiDialog').showModal();$('cancelKpi').onclick=()=>$('kpiDialog').close();$('customKpiForm').onsubmit=e=>{e.preventDefault();let v=Object.fromEntries(new FormData(e.target).entries());custom.push(v);persist();renderCatalog();$('kpiDialog').close();e.target.reset()};$('kpiCatalog').addEventListener('click',e=>{let btn=e.target.closest('[data-remove]');if(btn){custom.splice(Number(btn.dataset.remove),1);persist();renderCatalog()}});['importBtn','restoreDemo','wipeBtn'].forEach(id=>$(id).disabled=true);document.querySelectorAll('#manualForm input,#manualForm select,#manualForm button').forEach(e=>e.disabled=true);$('up').value='BIOGAS';render();activate('biodigestion');actualizarExcel(true);setInterval(()=>actualizarExcel(true),60000)}
+function init(){load();
+ if(!Array.from($('bioChartMetric').options).some(o=>o.value==='BIOGAS PROMEDIO DIARIO')){
+  const opcion=document.createElement('option');opcion.value='BIOGAS PROMEDIO DIARIO';opcion.textContent='Biogás promedio diario del mes (m³/día)';$('bioChartMetric').appendChild(opcion);
+ }
+ACCOUNTS.forEach(k=>{for(let id of ['manualAccount','kpiNumerator','kpiDenominator']){let opt=document.createElement('option');opt.value=k;opt.textContent=`${LABEL[k]} (${k})`;$(id).appendChild(opt)}});$('bioChartMetric').addEventListener('change',renderBiogas);$('up').addEventListener('change',render);$('period').addEventListener('change',()=>{document.querySelector('#manualForm [name=periodo]').value=period();render()});$('accountChart').addEventListener('change',renderCosts);$('costScope').addEventListener('change',renderCosts);$('costBaseline').addEventListener('change',renderCosts);$('costExportBtn').addEventListener('click',exportCosts);document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>activate(t.dataset.tab)));$('syncExcelBtn').onclick=()=>actualizarExcel(false);$('jumpUpload').onclick=()=>activate('datos');$('importBtn').onclick=importFile;$('exportBtn').onclick=()=>download(toCsv(rows),`ecomaule_respaldo_${period()}.csv`);$('templateBtn').onclick=()=>download(toCsv([{periodo:'2026-10',up:'LODOS',cuenta:'COGS',escenario:'PPTO',valor:37480000,origen:'Excel'}, {periodo:'2026-10',up:'LODOS',cuenta:'COGS',escenario:'REAL',valor:39200000,origen:'SAP'}, {periodo:'2026-10',up:'LODOS',cuenta:'TON TRATADAS',escenario:'REAL',valor:12500,origen:'Excel'}]),'plantilla_integracion_ecomaule.csv');$('clearDemo').onclick=()=>{rows=rows.filter(r=>r.origen!=='DEMO');persist();render()};$('restoreDemo').onclick=()=>{if(confirm('¿Reemplazar los registros actuales por datos FICTICIOS? Puedes exportar un respaldo antes.')){rows=seed();persist();render()}};$('wipeBtn').onclick=()=>{if(confirm('¿Eliminar TODOS los registros guardados en este navegador? Esta acción no se puede deshacer.')){rows=[];persist();render()}};$('manualForm').onsubmit=e=>{e.preventDefault();let x=Object.fromEntries(new FormData(e.target).entries()),r=normalizedRow(x,'MANUAL');if(!r){alert('Revisa los campos y el valor.');return}if(isDemo){rows=rows.filter(r=>r.origen!=='DEMO')}merge([r]);alert('Registro guardado.');};$('newKpiBtn').onclick=()=>$('kpiDialog').showModal();$('cancelKpi').onclick=()=>$('kpiDialog').close();$('customKpiForm').onsubmit=e=>{e.preventDefault();let v=Object.fromEntries(new FormData(e.target).entries());custom.push(v);persist();renderCatalog();$('kpiDialog').close();e.target.reset()};$('kpiCatalog').addEventListener('click',e=>{let btn=e.target.closest('[data-remove]');if(btn){custom.splice(Number(btn.dataset.remove),1);persist();renderCatalog()}});['importBtn','restoreDemo','wipeBtn'].forEach(id=>$(id).disabled=true);document.querySelectorAll('#manualForm input,#manualForm select,#manualForm button').forEach(e=>e.disabled=true);$('up').value='BIOGAS';render();activate('biodigestion');actualizarExcel(true);setInterval(()=>actualizarExcel(true),60000)}
 init();
 </script>
 </body>
